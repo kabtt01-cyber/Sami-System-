@@ -1,0 +1,8 @@
+{
+  "name": "Remix: MizanPro ERP",
+  "description": "Integrated business management system featuring accounting, inventory control, detailed reporting, and secure database tools for professional enterprise operations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

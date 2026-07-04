@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>الميزان دوت نت - نظام إدارة موارد المؤسسات المتكامل</title>
+    <script>
+      // Legacy Browser & Windows OS Compatibility Shield
+      (function() {
+        // 1. Polyfill globalThis for older JavaScript engines (e.g. older IE/Chrome)
+        if (typeof globalThis === 'undefined') {
+          Object.defineProperty(Object.prototype, 'globalThis', {
+            get: function () { return this; },
+            configurable: true
+          });
+        }
+        
+        // 2. Polyfill crypto.randomUUID for non-HTTPS or legacy browsers
+        if (!window.crypto) window.crypto = {};
+        if (!window.crypto.randomUUID) {
+          window.crypto.randomUUID = function() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+              var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+              return v.toString(16);
+            });
+          };
+        }
+
+        // 3. Polyfill ResizeObserver for older browsers and OS versions (e.g., Windows 7/8, Chrome 49-108)
+        if (!window.ResizeObserver) {
+          window.ResizeObserver = class ResizeObserver {
+            constructor(callback) {
+              this.callback = callback;
+              this.elements = [];
+              this.interval = setInterval(() => {
+                const entries = this.elements.map(el => {
+                  const rect = el.getBoundingClientRect();
+                  return {
+                    target: el,
+                    contentRect: rect,
+                    borderBoxSize: [{ inlineSize: rect.width, blockSize: rect.height }],
+                    contentBoxSize: [{ inlineSize: rect.width, blockSize: rect.height }]
+                  };
+                });
+                if (entries.length > 0) {
+                  try {
+                    this.callback(entries, this);
+                  } catch (e) {
+                    console.error('ResizeObserver callback failed', e);
+                  }
+                }
+              }, 1000);
+            }
+            observe(element) {
+              if (element && !this.elements.includes(element)) {
+                this.elements.push(element);
+              }
+            }
+            unobserve(element) {
+              this.elements = this.elements.filter(el => el !== element);
+            }
+            disconnect() {
+              this.elements = [];
+              clearInterval(this.interval);
+            }
+          };
+        }
+        
+        // 4. Polyfill structuredClone
+        if (!window.structuredClone) {
+          window.structuredClone = function(obj) {
+            return JSON.parse(JSON.stringify(obj));
+          };
+        }
+
+        // 5. Apply low-spec hardware optimization styles early if enabled
+        try {
+          if (localStorage.getItem('erp_low_spec_mode') === 'true') {
+            document.documentElement.classList.add('low-spec-mode');
+            console.log('Low-spec hardware rendering optimization active');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      /* Style-level optimizations for low-spec hardware */
+      .low-spec-mode *,
+      .low-spec-mode *:before,
+      .low-spec-mode *:after {
+        animation-duration: 0.001s !important;
+        transition-duration: 0.001s !important;
+        animation-delay: 0s !important;
+        transition-delay: 0s !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        backdrop-filter: none !important;
+      }
+      .low-spec-mode .animate-pulse,
+      .low-spec-mode .animate-bounce {
+        animation: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
