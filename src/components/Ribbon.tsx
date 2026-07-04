@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 export const Ribbon: React.FC = () => {
-  const { openWindow, connectedDbId, currentUser, showToast } = useErp();
+  const { openWindow, connectedDbId, currentUser, showToast, theme, customColor } = useErp();
   const [activeTab, setActiveTab] = useState<'accounting' | 'inventory' | 'sales' | 'system'>('accounting');
 
   const hasPermission = (permissionKey?: string) => {
@@ -18,54 +18,70 @@ export const Ribbon: React.FC = () => {
 
   if (!connectedDbId) return null;
 
+  const isDark = theme === 'dark' || theme === 'light-black';
+  
+  const getTabClass = (tabId: string) => {
+    const isActive = activeTab === tabId;
+    if (isDark) {
+      return `px-5 py-1.5 text-[13px] font-bold rounded-t-md transition-all border-x border-t cursor-pointer ${
+        isActive
+          ? 'bg-zinc-900 border-zinc-800 text-amber-400'
+          : 'bg-transparent border-transparent text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
+      }`;
+    }
+    if (theme === 'custom') {
+      return `px-5 py-1.5 text-[13px] font-bold rounded-t-md transition-all border-x border-t cursor-pointer ${
+        isActive
+          ? 'bg-slate-50 border-slate-300 text-slate-800 shadow-sm'
+          : 'bg-transparent border-transparent text-white/80 hover:bg-white/10 hover:text-white'
+      }`;
+    }
+    return `px-5 py-1.5 text-[13px] font-bold rounded-t-md transition-all border-x border-t cursor-pointer ${
+      isActive
+        ? 'bg-slate-50 border-slate-300 text-blue-700 shadow-[0_-2px_5px_rgba(0,0,0,0.05)]'
+        : 'bg-transparent border-transparent text-slate-600 hover:bg-slate-300 hover:text-slate-800'
+    }`;
+  };
+
+  const customHeaderStyle = theme === 'custom'
+    ? { backgroundColor: `${customColor}dd` }
+    : {};
+
   return (
-    <div className="bg-slate-50 border-b border-slate-300 shadow-sm flex flex-col select-none z-40" id="erp-ribbon">
+    <div className={`border-b shadow-sm flex flex-col select-none z-40 transition-all duration-300 ${isDark ? 'bg-zinc-900 border-zinc-850' : 'bg-slate-50 border-slate-300'}`} id="erp-ribbon">
       {/* Ribbon Tabs Header */}
-      <div className="flex bg-slate-200 border-b border-slate-300 pr-2 pt-1 gap-1">
+      <div 
+        className={`flex border-b pr-2 pt-1 gap-1 transition-all duration-300 ${isDark ? 'bg-zinc-950 border-zinc-850' : theme === 'custom' ? 'border-slate-300' : 'bg-slate-200 border-slate-300'}`}
+        style={customHeaderStyle}
+      >
         <button
           onClick={() => setActiveTab('accounting')}
-          className={`px-5 py-1.5 text-[13px] font-bold rounded-t-md transition-all border-x border-t cursor-pointer ${
-            activeTab === 'accounting'
-              ? 'bg-slate-50 border-slate-300 text-blue-700 shadow-[0_-2px_5px_rgba(0,0,0,0.05)]'
-              : 'bg-transparent border-transparent text-slate-600 hover:bg-slate-300 hover:text-slate-800'
-          }`}
+          className={getTabClass('accounting')}
         >
           المحاسبة والقيود
         </button>
         <button
           onClick={() => setActiveTab('inventory')}
-          className={`px-5 py-1.5 text-[13px] font-bold rounded-t-md transition-all border-x border-t cursor-pointer ${
-            activeTab === 'inventory'
-              ? 'bg-slate-50 border-slate-300 text-blue-700 shadow-[0_-2px_5px_rgba(0,0,0,0.05)]'
-              : 'bg-transparent border-transparent text-slate-600 hover:bg-slate-300 hover:text-slate-800'
-          }`}
+          className={getTabClass('inventory')}
         >
           بطاقات ومخازن المواد
         </button>
         <button
           onClick={() => setActiveTab('sales')}
-          className={`px-5 py-1.5 text-[13px] font-bold rounded-t-md transition-all border-x border-t cursor-pointer ${
-            activeTab === 'sales'
-              ? 'bg-slate-50 border-slate-300 text-blue-700 shadow-[0_-2px_5px_rgba(0,0,0,0.05)]'
-              : 'bg-transparent border-transparent text-slate-600 hover:bg-slate-300 hover:text-slate-800'
-          }`}
+          className={getTabClass('sales')}
         >
           حركة الفواتير والمبيعات
         </button>
         <button
           onClick={() => setActiveTab('system')}
-          className={`px-5 py-1.5 text-[13px] font-bold rounded-t-md transition-all border-x border-t cursor-pointer ${
-            activeTab === 'system'
-              ? 'bg-slate-50 border-slate-300 text-blue-700 shadow-[0_-2px_5px_rgba(0,0,0,0.05)]'
-              : 'bg-transparent border-transparent text-slate-600 hover:bg-slate-300 hover:text-slate-800'
-          }`}
+          className={getTabClass('system')}
         >
           أدوات النظام والصلاحيات
         </button>
       </div>
 
       {/* Ribbon Panels */}
-      <div className="p-2.5 flex items-center gap-2 overflow-x-auto min-h-[92px] bg-slate-50">
+      <div className={`p-2.5 flex items-center gap-2 overflow-x-auto min-h-[92px] transition-colors duration-300 ${isDark ? 'bg-zinc-900' : 'bg-slate-50'}`}>
         
         {/* ACCOUNTING PANEL */}
         {activeTab === 'accounting' && (

@@ -26,7 +26,9 @@ export const Dashboard: React.FC = () => {
     openWindow,
     showToast,
     addTask,
-    deleteTask
+    deleteTask,
+    theme,
+    customColor
   } = useErp();
 
   // Widget visibility state
@@ -152,8 +154,12 @@ export const Dashboard: React.FC = () => {
   const vaultAndBankAccounts = accounts.filter(acc => acc.id === 'acc-111001' || acc.id === 'acc-111002');
   const totalVaultValue = vaultAndBankAccounts.reduce((acc, a) => acc + a.balance, 0);
 
+  const isDark = theme === 'dark' || theme === 'light-black';
+
   return (
-    <div className="w-full h-full p-4 overflow-y-auto space-y-5 bg-slate-50 relative select-none">
+    <div className={`w-full h-full p-4 overflow-y-auto space-y-5 relative select-none transition-colors duration-300 ${
+      isDark ? 'bg-zinc-950 text-slate-100' : 'bg-slate-50 text-slate-800'
+    }`}>
       
       {/* 6 Real-time KPI Commercial Statistics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5" id="dashboard-commercial-kpis">

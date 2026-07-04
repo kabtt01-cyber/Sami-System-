@@ -1,4 +1,4 @@
-export type ThemeType = 'blue' | 'green' | 'dark' | 'light' | 'gray' | 'custom';
+export type ThemeType = 'blue' | 'green' | 'dark' | 'light' | 'gray' | 'custom' | 'light-black';
 
 export interface ThemeConfig {
   id: ThemeType;
@@ -57,6 +57,20 @@ export const THEMES: ThemeConfig[] = [
     textMuted: 'text-zinc-400',
     accentColor: '#3f3f46',
     borderClass: 'border-zinc-700'
+  },
+  {
+    id: 'light-black',
+    name: 'Light Black (Anthracite)',
+    nameAr: 'الأسود اللطيف الفاخر (Light Black)',
+    primaryBg: 'bg-zinc-900',
+    primaryText: 'text-zinc-100',
+    headerBg: 'bg-gradient-to-r from-zinc-900 via-zinc-850 to-neutral-900',
+    statusBarBg: 'bg-zinc-950',
+    workspaceBg: 'bg-zinc-900',
+    cardBg: 'bg-zinc-850',
+    textMuted: 'text-zinc-400',
+    accentColor: '#18181b',
+    borderClass: 'border-zinc-850'
   },
   {
     id: 'light',

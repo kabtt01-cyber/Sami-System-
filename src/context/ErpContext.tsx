@@ -124,6 +124,8 @@ interface ErpContextType {
   setTheme: (theme: string) => void;
   customColor: string;
   setCustomColor: (color: string) => void;
+  customFontColor: string;
+  setCustomFontColor: (color: string) => void;
   fontFamily: string;
   setFontFamily: (font: string) => void;
   fontSize: number;
@@ -265,12 +267,15 @@ export const ErpProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast(`تم تغيير لغة النظام بنجاح.`, 'success');
   }, [showToast]);
 
-  // 2. Theme State (blue, green, dark, light, gray, custom)
+  // 2. Theme State (blue, green, dark, light, gray, custom, light-black)
   const [theme, setThemeState] = useState<string>(() => {
-    return localStorage.getItem('erp_theme') || 'blue';
+    return localStorage.getItem('erp_theme') || 'light-black';
   });
   const [customColor, setCustomColorState] = useState<string>(() => {
     return localStorage.getItem('erp_custom_color') || '#3b82f6';
+  });
+  const [customFontColor, setCustomFontColorState] = useState<string>(() => {
+    return localStorage.getItem('erp_custom_font_color') || '#fbbf24';
   });
 
   const setTheme = useCallback((t: string) => {
@@ -282,6 +287,11 @@ export const ErpProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const setCustomColor = useCallback((c: string) => {
     setCustomColorState(c);
     localStorage.setItem('erp_custom_color', c);
+  }, []);
+
+  const setCustomFontColor = useCallback((fc: string) => {
+    setCustomFontColorState(fc);
+    localStorage.setItem('erp_custom_font_color', fc);
   }, []);
 
   const isDarkMode = theme === 'dark';
@@ -1632,6 +1642,8 @@ export const ErpProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setTheme,
         customColor,
         setCustomColor,
+        customFontColor,
+        setCustomFontColor,
         fontFamily,
         setFontFamily,
         fontSize,

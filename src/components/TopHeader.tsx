@@ -14,6 +14,7 @@ export const TopHeader: React.FC = () => {
     language, 
     setLanguage, 
     theme, 
+    customColor,
     toggleDarkMode, 
     favorites, 
     toggleFavorite,
@@ -128,11 +129,29 @@ export const TopHeader: React.FC = () => {
 
   const activeTheme = THEMES.find(t => t.id === theme) || THEMES[0];
   const unreadCount = notifications.filter(n => !n.read).length;
+  const isLight = theme === 'light';
+
+  const getHeaderBgClass = () => {
+    switch (theme) {
+      case 'dark': return 'bg-zinc-950 border-zinc-800 text-white';
+      case 'light-black': return 'bg-zinc-900 border-zinc-800 text-white';
+      case 'light': return 'bg-slate-100 border-slate-300 text-slate-800';
+      case 'blue': return 'bg-blue-900 border-blue-950 text-white';
+      case 'green': return 'bg-emerald-900 border-emerald-950 text-white';
+      case 'gray': return 'bg-slate-850 border-slate-900 text-slate-100';
+      default: return 'bg-slate-900 border-slate-800 text-slate-100';
+    }
+  };
+
+  const customHeaderStyle = theme === 'custom'
+    ? { backgroundColor: customColor, borderColor: `${customColor}dd`, color: '#ffffff' }
+    : {};
 
   return (
     <div 
       id="erp-top-header"
-      className={`${theme === 'dark' ? 'bg-zinc-950 text-white' : 'bg-slate-900 text-slate-100'} border-b ${theme === 'dark' ? 'border-zinc-800' : 'border-slate-800'} shadow-md px-4 py-2 flex flex-col md:flex-row md:items-center justify-between gap-3 z-50 transition-all duration-300`}
+      className={`border-b shadow-md px-4 py-2 flex flex-col md:flex-row md:items-center justify-between gap-3 z-50 transition-all duration-300 ${getHeaderBgClass()}`}
+      style={customHeaderStyle}
       dir={language === 'ar' ? 'rtl' : 'ltr'}
     >
       {/* Right/Left: Brand and Company Details */}
@@ -167,10 +186,10 @@ export const TopHeader: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setSearchFocused(true)}
             placeholder={t('searchPlaceholder')}
-            className={`w-full text-xs font-medium pr-10 pl-4 py-2 rounded-lg bg-slate-800/80 border text-slate-200 placeholder-slate-400 outline-none transition-all ${
-              searchFocused 
-                ? 'border-amber-400 ring-2 ring-amber-400/20 bg-slate-800 shadow-[0_0_15px_rgba(251,191,36,0.1)]' 
-                : 'border-slate-700 hover:border-slate-600'
+            className={`w-full text-xs font-medium pr-10 pl-4 py-2 rounded-lg border outline-none transition-all ${
+              isLight
+                ? `bg-slate-200 border-slate-300 text-slate-800 placeholder-slate-500 ${searchFocused ? 'bg-white border-amber-500 ring-2 ring-amber-500/20' : 'hover:border-slate-400'}`
+                : `bg-slate-800/80 border-slate-700 text-slate-200 placeholder-slate-400 ${searchFocused ? 'bg-slate-800 border-amber-400 ring-2 ring-amber-400/20 shadow-[0_0_15px_rgba(251,191,36,0.1)]' : 'hover:border-slate-600'}`
             }`}
           />
           {searchQuery && (

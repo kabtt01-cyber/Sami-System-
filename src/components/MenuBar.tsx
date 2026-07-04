@@ -16,7 +16,9 @@ export const MenuBar: React.FC = () => {
     connectedDbId,
     currentUser,
     logoutUser,
-    showToast
+    showToast,
+    theme,
+    customColor
   } = useErp();
 
   const hasPermission = (permissionKey?: string) => {
@@ -219,9 +221,44 @@ export const MenuBar: React.FC = () => {
 
   if (!connectedDbId) return null;
 
+  const isLight = theme === 'light';
+  const getMenuBarBgClass = () => {
+    switch (theme) {
+      case 'dark': return 'bg-zinc-900 text-white border-zinc-800';
+      case 'light-black': return 'bg-zinc-850 text-white border-zinc-800';
+      case 'light': return 'bg-slate-200 text-slate-800 border-slate-300';
+      case 'blue': return 'bg-blue-850 text-white border-blue-700';
+      case 'green': return 'bg-emerald-900 text-white border-emerald-800';
+      case 'gray': return 'bg-slate-750 text-white border-slate-650';
+      default: return 'bg-slate-800 text-white border-slate-700';
+    }
+  };
+
+  const getButtonClass = (menuId: string) => {
+    const isActive = activeMenu === menuId;
+    if (theme === 'custom') {
+      return `px-4 py-1.5 hover:bg-black/15 transition-colors focus:outline-none cursor-pointer text-[13px] font-bold ${
+        isActive ? 'bg-black/25 text-amber-300' : 'text-white'
+      }`;
+    }
+    if (isLight) {
+      return `px-4 py-1.5 hover:bg-slate-350 transition-colors focus:outline-none cursor-pointer text-[13px] font-bold ${
+        isActive ? 'bg-slate-300 text-blue-700' : 'text-slate-800'
+      }`;
+    }
+    return `px-4 py-1.5 hover:bg-slate-700 transition-colors focus:outline-none cursor-pointer text-[13px] font-bold ${
+      isActive ? 'bg-slate-700 text-blue-400' : 'text-white'
+    }`;
+  };
+
+  const customBarStyle = theme === 'custom'
+    ? { backgroundColor: `${customColor}dd`, borderBottomColor: `${customColor}bb`, color: '#ffffff' }
+    : {};
+
   return (
     <div 
-      className="bg-slate-800 text-white text-sm border-b border-slate-700 flex select-none z-50 h-9 items-center relative"
+      className={`text-sm border-b flex select-none z-50 h-9 items-center relative transition-all duration-300 ${getMenuBarBgClass()}`}
+      style={customBarStyle}
       ref={menuRef}
       id="erp-menu-bar"
     >
@@ -229,9 +266,7 @@ export const MenuBar: React.FC = () => {
         {menus.map((menu) => (
           <div key={menu.id} className="relative h-full flex items-center">
             <button
-              className={`px-4 py-1.5 hover:bg-slate-700 transition-colors focus:outline-none cursor-pointer text-[13px] font-medium ${
-                activeMenu === menu.id ? 'bg-slate-700 font-bold text-blue-400' : ''
-              }`}
+              className={getButtonClass(menu.id)}
               onClick={() => handleMenuClick(menu.id)}
             >
               {menu.label}

@@ -3,7 +3,7 @@ import { useErp } from '../context/ErpContext';
 import { Database, User, MapPin, Warehouse, RefreshCw, Calendar, Clock } from 'lucide-react';
 
 export const StatusBar: React.FC = () => {
-  const { connectedDbId, databases, currentUser, currentVersion } = useErp();
+  const { connectedDbId, databases, currentUser, currentVersion, theme, customColor } = useErp();
   const [time, setTime] = useState<string>('');
 
   useEffect(() => {
@@ -30,7 +30,15 @@ export const StatusBar: React.FC = () => {
 
   return (
     <div 
-      className="bg-slate-800 text-slate-300 text-xs border-t border-slate-700 h-8 flex items-center justify-between px-3 select-none z-50 shrink-0 font-medium"
+      className={`text-xs border-t h-8 flex items-center justify-between px-3 select-none z-50 shrink-0 font-medium transition-all duration-300 ${
+        theme === 'dark' ? 'bg-zinc-950 text-zinc-300 border-zinc-800' :
+        theme === 'light-black' ? 'bg-zinc-950 text-zinc-300 border-zinc-900' :
+        theme === 'light' ? 'bg-slate-350 text-slate-800 border-slate-400' :
+        theme === 'blue' ? 'bg-blue-950 text-blue-200 border-blue-900' :
+        theme === 'green' ? 'bg-emerald-950 text-emerald-200 border-emerald-900' :
+        theme === 'gray' ? 'bg-slate-900 text-slate-300 border-slate-800' : 'bg-slate-800 text-slate-300 border-slate-700'
+      }`}
+      style={theme === 'custom' ? { backgroundColor: `${customColor}cc`, borderTopColor: `${customColor}aa`, color: '#f8fafc' } : {}}
       id="erp-status-bar"
     >
       <div className="flex items-center gap-5">

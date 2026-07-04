@@ -32,6 +32,7 @@ import { SuppliersWindow } from './components/windows/SuppliersWindow';
 import { TreasuryBanksWindow } from './components/windows/TreasuryBanksWindow';
 import { HrEmployeesWindow } from './components/windows/HrEmployeesWindow';
 import { AiAssistant } from './components/AiAssistant';
+import { ActiveTabBar } from './components/ActiveTabBar';
 
 import { 
   X, Minimize2, Maximize2, Move, AlertCircle, CheckCircle, AlertTriangle, XCircle, Info, RefreshCw, Sparkles
@@ -63,6 +64,7 @@ function DesktopContent() {
     language,
     theme,
     customColor,
+    customFontColor,
     fontFamily,
     fontSize,
     fontWeight,
@@ -266,11 +268,29 @@ function DesktopContent() {
     fontWeight: fontWeight === 'bold' ? '700' : fontWeight === 'medium' ? '500' : '400'
   } as React.CSSProperties;
 
+  const getRootBgClass = () => {
+    switch (theme) {
+      case 'dark': return 'bg-zinc-950';
+      case 'light-black': return 'bg-zinc-900';
+      case 'light': return 'bg-slate-200';
+      case 'blue': return 'bg-blue-950';
+      case 'green': return 'bg-emerald-950';
+      case 'gray': return 'bg-slate-900';
+      default: return 'bg-slate-900';
+    }
+  };
+
+  const rootStyle = {
+    ...fontStyle,
+    color: customFontColor,
+    ...(theme === 'custom' ? { backgroundColor: customColor } : {})
+  };
+
   return (
     <div 
-      className="flex flex-col h-screen overflow-hidden bg-slate-900 select-none transition-all duration-300" 
+      className={`flex flex-col h-screen overflow-hidden select-none transition-all duration-300 ${getRootBgClass()}`} 
       dir={language === 'ar' ? 'rtl' : 'ltr'}
-      style={fontStyle}
+      style={rootStyle}
     >
       {/* Top Executive Header Bar */}
       <TopHeader />
@@ -431,7 +451,14 @@ function DesktopContent() {
       )}
 
       {/* Workspace Area */}
-      <div className="flex-1 relative overflow-hidden bg-slate-100">
+      <div className={`flex-1 relative overflow-hidden transition-all duration-300 ${
+        theme === 'dark' ? 'bg-zinc-950' :
+        theme === 'light-black' ? 'bg-zinc-900' :
+        theme === 'light' ? 'bg-slate-50' :
+        theme === 'blue' ? 'bg-blue-50/30' :
+        theme === 'green' ? 'bg-emerald-50/30' :
+        theme === 'gray' ? 'bg-slate-100' : 'bg-slate-100'
+      }`} style={theme === 'custom' ? { backgroundColor: `${customColor}08` } : {}}>
         {!connectedDbId ? (
           /* Locked Database Connection dialog */
           <DatabaseModal />
@@ -606,6 +633,8 @@ function DesktopContent() {
           </span>
         </motion.button>
       )}
+
+      {connectedDbId && currentUser && <ActiveTabBar />}
 
       {/* Bottom Status Bar */}
       <StatusBar />

@@ -23,6 +23,8 @@ export const ToolsManagerWindow: React.FC<ToolsManagerWindowProps> = ({ windowId
     setTheme,
     customColor,
     setCustomColor,
+    customFontColor,
+    setCustomFontColor,
     fontFamily,
     setFontFamily,
     fontSize,
@@ -577,6 +579,63 @@ export const ToolsManagerWindow: React.FC<ToolsManagerWindowProps> = ({ windowId
                             setTheme('custom');
                           }}
                           className="w-full text-xs p-1 bg-slate-100 border rounded font-mono font-bold"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Font Color Customizer */}
+                  <div className="space-y-2 pt-4 border-t border-slate-100">
+                    <label className="font-bold text-slate-700 block flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                      تغيير سريع للون خطوط الواجهة والتقارير:
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { hex: '#fbbf24', name: 'ذهبي (Amber)', bg: 'bg-amber-400' },
+                        { hex: '#38bdf8', name: 'سماوي (Cyan)', bg: 'bg-sky-400' },
+                        { hex: '#f8fafc', name: 'لؤلؤي (Pearl)', bg: 'bg-slate-50 border border-slate-300' },
+                        { hex: '#34d399', name: 'نعناعي (Mint)', bg: 'bg-emerald-400' },
+                        { hex: '#f87171', name: 'وردي (Rose)', bg: 'bg-rose-400' },
+                        { hex: '#c084fc', name: 'لافندر (Lavender)', bg: 'bg-purple-400' }
+                      ].map(colorSwatch => (
+                        <button
+                          key={colorSwatch.hex}
+                          type="button"
+                          onClick={() => {
+                            setCustomFontColor(colorSwatch.hex);
+                            showToast(`تم تغيير لون الخط لـ: ${colorSwatch.name}`, 'success');
+                          }}
+                          className={`px-2 py-1 rounded-md border text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                            customFontColor === colorSwatch.hex
+                              ? 'border-blue-600 ring-2 ring-blue-600/10 bg-blue-50/10'
+                              : 'border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className={`w-2.5 h-2.5 rounded-full ${colorSwatch.bg}`}></span>
+                          <span>{colorSwatch.name}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-1">
+                      <input 
+                        type="color" 
+                        value={customFontColor}
+                        onChange={(e) => {
+                          setCustomFontColor(e.target.value);
+                        }}
+                        className="w-8 h-8 border rounded-lg cursor-pointer bg-white shrink-0"
+                      />
+                      <div className="flex-1">
+                        <span className="text-[10px] text-slate-400 block leading-tight">اختر لون خط مخصص تماماً:</span>
+                        <input 
+                          type="text" 
+                          value={customFontColor} 
+                          onChange={(e) => {
+                            setCustomFontColor(e.target.value);
+                          }}
+                          className="w-full text-[11px] p-1 bg-slate-100 border rounded font-mono font-bold"
                         />
                       </div>
                     </div>
