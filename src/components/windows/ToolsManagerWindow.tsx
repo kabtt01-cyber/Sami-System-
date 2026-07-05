@@ -6,7 +6,7 @@ import {
   Settings, Sliders, Palette, FileText, AlertTriangle, Play, CheckCircle2,
   Download, Trash2, Cloud, HardDrive, Type, ZoomIn, ZoomOut, Sparkles, CheckCircle,
   ShieldAlert, Activity, Lock, Gauge, Zap, BarChart3, Fingerprint, FileCheck,
-  Server, Globe
+  Server, Globe, Columns, Rows, Minimize, Maximize2, LayoutGrid, Layers
 } from 'lucide-react';
 import { DeploymentReleaseTab } from './DeploymentReleaseTab';
 
@@ -38,7 +38,11 @@ export const ToolsManagerWindow: React.FC<ToolsManagerWindowProps> = ({ windowId
     checkProgramUpdate,
     isUpdatingDb,
     updateDatabaseSchema,
-    addNotification
+    addNotification,
+    tileWindows,
+    minimizeAll,
+    restoreAll,
+    closeAll
   } = useErp();
 
   const [activeTab, setActiveTab] = useState<'designer' | 'layout' | 'maintenance' | 'backups' | 'closing' | 'settings' | 'qa_testing' | 'deployment_release'>(() => {
@@ -710,6 +714,132 @@ export const ToolsManagerWindow: React.FC<ToolsManagerWindowProps> = ({ windowId
                       ))}
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Predefined Window layouts */}
+              <div className={`border rounded-xl p-4.5 space-y-4 shadow-sm text-xs mt-4 ${
+                theme === 'dark' || theme === 'light-black' ? 'bg-zinc-950/20 border-zinc-800' : 'bg-white border-slate-200'
+              }`}>
+                <span className={`font-bold flex items-center gap-1.5 border-b pb-2 ${
+                  theme === 'dark' || theme === 'light-black' ? 'text-zinc-200 border-zinc-800' : 'text-slate-800 border-slate-150'
+                }`}>
+                  <LayoutGrid className="w-4 h-4 text-indigo-600" />
+                  أدوات ترتيب النوافذ والتحكم السريع بالواجهات
+                </span>
+                <p className={`text-[11px] leading-relaxed ${
+                  theme === 'dark' || theme === 'light-black' ? 'text-zinc-400' : 'text-slate-500'
+                }`}>
+                  يمكنك ترتيب النوافذ والبطاقات المحاسبية المفتوحة في ساحة العمل دفعة واحدة بنقرة زر واحدة لتسهيل المقارنات وإدخال البيانات المتقاطعة.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      tileWindows('horizontal');
+                      showToast('تم ترتيب النوافذ أفقياً', 'success');
+                    }}
+                    className={`p-3 border rounded-xl cursor-pointer flex flex-col items-center justify-center gap-1.5 transition-all text-center group ${
+                      theme === 'dark' || theme === 'light-black' 
+                        ? 'border-zinc-800 hover:border-blue-700 bg-zinc-900/30' 
+                        : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50/10'
+                    }`}
+                  >
+                    <div className="bg-sky-100 text-sky-700 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                      <Rows className="w-5 h-5" />
+                    </div>
+                    <span className={`font-bold text-[11px] ${theme === 'dark' || theme === 'light-black' ? 'text-zinc-300' : 'text-slate-700'}`}>ترتيب أفقي</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      tileWindows('vertical');
+                      showToast('تم ترتيب النوافذ عمودياً', 'success');
+                    }}
+                    className={`p-3 border rounded-xl cursor-pointer flex flex-col items-center justify-center gap-1.5 transition-all text-center group ${
+                      theme === 'dark' || theme === 'light-black' 
+                        ? 'border-zinc-800 hover:border-emerald-700 bg-zinc-900/30' 
+                        : 'border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/10'
+                    }`}
+                  >
+                    <div className="bg-emerald-100 text-emerald-700 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                      <Columns className="w-5 h-5" />
+                    </div>
+                    <span className={`font-bold text-[11px] ${theme === 'dark' || theme === 'light-black' ? 'text-zinc-300' : 'text-slate-700'}`}>ترتيب عمودي</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      tileWindows('cascade');
+                      showToast('تم ترتيب النوافذ تراكبياً', 'success');
+                    }}
+                    className={`p-3 border rounded-xl cursor-pointer flex flex-col items-center justify-center gap-1.5 transition-all text-center group ${
+                      theme === 'dark' || theme === 'light-black' 
+                        ? 'border-zinc-800 hover:border-purple-700 bg-zinc-900/30' 
+                        : 'border-slate-200 hover:border-purple-300 hover:bg-purple-50/10'
+                    }`}
+                  >
+                    <div className="bg-purple-100 text-purple-700 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                      <Layers className="w-5 h-5" />
+                    </div>
+                    <span className={`font-bold text-[11px] ${theme === 'dark' || theme === 'light-black' ? 'text-zinc-300' : 'text-slate-700'}`}>ترتيب متتالي</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      minimizeAll();
+                      showToast('تم تصغير كافة النوافذ', 'info');
+                    }}
+                    className={`p-3 border rounded-xl cursor-pointer flex flex-col items-center justify-center gap-1.5 transition-all text-center group ${
+                      theme === 'dark' || theme === 'light-black' 
+                        ? 'border-zinc-800 hover:border-amber-700 bg-zinc-900/30' 
+                        : 'border-slate-200 hover:border-amber-300 hover:bg-amber-50/10'
+                    }`}
+                  >
+                    <div className="bg-amber-100 text-amber-700 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                      <Minimize className="w-5 h-5" />
+                    </div>
+                    <span className={`font-bold text-[11px] ${theme === 'dark' || theme === 'light-black' ? 'text-zinc-300' : 'text-slate-700'}`}>تصغير الكل</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      restoreAll();
+                      showToast('تم استعادة كافة النوافذ المفتوحة', 'info');
+                    }}
+                    className={`p-3 border rounded-xl cursor-pointer flex flex-col items-center justify-center gap-1.5 transition-all text-center group ${
+                      theme === 'dark' || theme === 'light-black' 
+                        ? 'border-zinc-800 hover:border-indigo-700 bg-zinc-900/30' 
+                        : 'border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/10'
+                    }`}
+                  >
+                    <div className="bg-indigo-100 text-indigo-700 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                      <Maximize2 className="w-5 h-5" />
+                    </div>
+                    <span className={`font-bold text-[11px] ${theme === 'dark' || theme === 'light-black' ? 'text-zinc-300' : 'text-slate-700'}`}>استعادة الكل</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeAll();
+                      showToast('تم إغلاق كافة النوافذ المفتوحة', 'warning');
+                    }}
+                    className={`p-3 border rounded-xl cursor-pointer flex flex-col items-center justify-center gap-1.5 transition-all text-center group ${
+                      theme === 'dark' || theme === 'light-black' 
+                        ? 'border-zinc-800 hover:border-red-700 bg-zinc-900/30' 
+                        : 'border-slate-200 hover:border-red-300 hover:bg-red-50/10'
+                    }`}
+                  >
+                    <div className="bg-red-100 text-red-700 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                      <Trash2 className="w-5 h-5" />
+                    </div>
+                    <span className={`font-bold text-[11px] ${theme === 'dark' || theme === 'light-black' ? 'text-zinc-300' : 'text-slate-700'}`}>إغلاق الكل</span>
+                  </button>
                 </div>
               </div>
             </div>

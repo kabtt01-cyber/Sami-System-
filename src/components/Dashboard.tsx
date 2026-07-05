@@ -164,54 +164,54 @@ export const Dashboard: React.FC = () => {
       {/* 6 Real-time KPI Commercial Statistics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5" id="dashboard-commercial-kpis">
         {/* Sales */}
-        <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between relative overflow-hidden group">
+        <div className={`rounded-xl border p-3.5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group transition-colors duration-300 ${isDark ? 'bg-zinc-900 border-zinc-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
           <div className="absolute top-0 right-0 h-1.5 w-full bg-blue-500"></div>
           <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
             <Receipt className="w-3.5 h-3.5 text-blue-500" />
             <span>إجمالي المبيعات</span>
           </span>
           <div className="mt-2.5">
-            <div className="text-[15px] font-extrabold text-slate-800 font-mono text-left truncate">
+            <div className={`text-[15px] font-extrabold font-mono text-left truncate ${isDark ? 'text-zinc-100' : 'text-slate-800'}`}>
               {totalSalesValue.toLocaleString()}
             </div>
-            <span className="text-[9px] text-blue-600 font-bold block mt-0.5">ر.س (ريال سعودي)</span>
+            <span className={`text-[9px] font-bold block mt-0.5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>ر.س (ريال سعودي)</span>
           </div>
         </div>
 
         {/* Purchases */}
-        <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between relative overflow-hidden group">
+        <div className={`rounded-xl border p-3.5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group transition-colors duration-300 ${isDark ? 'bg-zinc-900 border-zinc-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
           <div className="absolute top-0 right-0 h-1.5 w-full bg-emerald-500"></div>
           <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
             <span>إجمالي المشتريات</span>
           </span>
           <div className="mt-2.5">
-            <div className="text-[15px] font-extrabold text-slate-800 font-mono text-left truncate">
+            <div className={`text-[15px] font-extrabold font-mono text-left truncate ${isDark ? 'text-zinc-100' : 'text-slate-800'}`}>
               {totalPurchasesValue.toLocaleString()}
             </div>
-            <span className="text-[9px] text-emerald-600 font-bold block mt-0.5">ر.س (شامل الضريبة)</span>
+            <span className={`text-[9px] font-bold block mt-0.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>ر.س (شامل الضريبة)</span>
           </div>
         </div>
 
         {/* Inventory Value */}
-        <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between relative overflow-hidden group">
+        <div className={`rounded-xl border p-3.5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group transition-colors duration-300 ${isDark ? 'bg-zinc-900 border-zinc-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}>
           <div className="absolute top-0 right-0 h-1.5 w-full bg-amber-500"></div>
           <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
             <Package className="w-3.5 h-3.5 text-amber-500" />
             <span>تقييم المخازن</span>
           </span>
           <div className="mt-2.5">
-            <div className="text-[15px] font-extrabold text-slate-800 font-mono text-left truncate">
+            <div className={`text-[15px] font-extrabold font-mono text-left truncate ${isDark ? 'text-zinc-100' : 'text-slate-800'}`}>
               {totalStockValue.toLocaleString()}
             </div>
-            <span className="text-[9px] text-amber-600 font-bold block mt-0.5">تكلفة شراء المواد</span>
+            <span className={`text-[9px] font-bold block mt-0.5 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>تكلفة شراء المواد</span>
           </div>
         </div>
 
         {/* Customers */}
         <div 
           onClick={() => openWindow('customers', 'شاشة إدارة بطاقات العملاء المباشرة')}
-          className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between relative overflow-hidden group cursor-pointer"
+          className={`rounded-xl border p-3.5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group cursor-pointer transition-colors duration-300 ${isDark ? 'bg-zinc-900 border-zinc-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}
         >
           <div className="absolute top-0 right-0 h-1.5 w-full bg-purple-500"></div>
           <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
@@ -219,17 +219,17 @@ export const Dashboard: React.FC = () => {
             <span>العملاء النشطين</span>
           </span>
           <div className="mt-2.5">
-            <div className="text-[15px] font-extrabold text-slate-800 font-mono text-left truncate">
+            <div className={`text-[15px] font-extrabold font-mono text-left truncate ${isDark ? 'text-zinc-100' : 'text-slate-800'}`}>
               {totalCustomersCount}
             </div>
-            <span className="text-[9px] text-purple-600 font-bold block mt-0.5">ذمم مدينة بالكامل</span>
+            <span className={`text-[9px] font-bold block mt-0.5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>ذمم مدينة بالكامل</span>
           </div>
         </div>
 
         {/* Suppliers */}
         <div 
           onClick={() => openWindow('suppliers', 'شاشة إدارة بطاقات الموردين المباشرة')}
-          className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between relative overflow-hidden group cursor-pointer"
+          className={`rounded-xl border p-3.5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group cursor-pointer transition-colors duration-300 ${isDark ? 'bg-zinc-900 border-zinc-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}
         >
           <div className="absolute top-0 right-0 h-1.5 w-full bg-rose-500"></div>
           <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
@@ -237,17 +237,17 @@ export const Dashboard: React.FC = () => {
             <span>الموردين المعتمدين</span>
           </span>
           <div className="mt-2.5">
-            <div className="text-[15px] font-extrabold text-slate-800 font-mono text-left truncate">
+            <div className={`text-[15px] font-extrabold font-mono text-left truncate ${isDark ? 'text-zinc-100' : 'text-slate-800'}`}>
               {totalSuppliersCount}
             </div>
-            <span className="text-[9px] text-rose-600 font-bold block mt-0.5">ذمم دائنة والتزامات</span>
+            <span className={`text-[9px] font-bold block mt-0.5 ${isDark ? 'text-rose-400' : 'text-rose-600'}`}>ذمم دائنة والتزامات</span>
           </div>
         </div>
 
         {/* Cash vault (الخزينة) */}
         <div 
           onClick={() => openWindow('treasury_banks', 'إدارة الخزائن والحسابات البنكية')}
-          className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between relative overflow-hidden group cursor-pointer"
+          className={`rounded-xl border p-3.5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group cursor-pointer transition-colors duration-300 ${isDark ? 'bg-zinc-900 border-zinc-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}
         >
           <div className="absolute top-0 right-0 h-1.5 w-full bg-blue-600"></div>
           <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
@@ -255,25 +255,27 @@ export const Dashboard: React.FC = () => {
             <span>الخزينة والبنك</span>
           </span>
           <div className="mt-2.5">
-            <div className="text-[15px] font-extrabold text-blue-700 font-mono text-left truncate">
+            <div className={`text-[15px] font-extrabold font-mono text-left truncate ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>
               {totalVaultValue.toLocaleString()}
             </div>
-            <span className="text-[9px] text-blue-600 font-bold block mt-0.5">السيولة النقدية المتوفرة</span>
+            <span className={`text-[9px] font-bold block mt-0.5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>السيولة النقدية المتوفرة</span>
           </div>
         </div>
       </div>
       
       {/* Closed widgets recovery bar */}
       {widgets.some(w => !w.isOpen) && (
-        <div className="bg-slate-200 border border-slate-300 p-2 rounded-lg flex flex-wrap gap-2 items-center text-xs">
-          <span className="font-bold text-slate-700">الأدوات المخفية:</span>
+        <div className={`border p-2 rounded-lg flex flex-wrap gap-2 items-center text-xs transition-colors duration-300 ${isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-slate-200 border-slate-300'}`}>
+          <span className={`font-bold ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>الأدوات المخفية:</span>
           {widgets.filter(w => !w.isOpen).map(w => (
             <button 
               key={w.id} 
               onClick={() => openWidget(w.id)}
-              className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 px-2.5 py-1 rounded-md transition-all flex items-center gap-1 cursor-pointer font-bold shadow-xs"
+              className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1 cursor-pointer font-bold shadow-xs border ${
+                isDark ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-100' : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-700'
+              }`}
             >
-              <Plus className="w-3.5 h-3.5 text-blue-600" />
+              <Plus className="w-3.5 h-3.5 text-blue-500" />
               <span>{w.title}</span>
             </button>
           ))}
@@ -288,23 +290,27 @@ export const Dashboard: React.FC = () => {
           return (
             <div 
               key={widget.id} 
-              className={`bg-white rounded-lg border border-slate-300 shadow-xs flex flex-col overflow-hidden transition-all duration-200 ${
+              className={`rounded-lg border shadow-xs flex flex-col overflow-hidden transition-all duration-200 ${
+                isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-100' : 'bg-white border-slate-300 text-slate-700'
+              } ${
                 widget.isMinimized ? 'h-[44px]' : 'h-[280px]'
               }`}
             >
               {/* Widget Header */}
-              <div className="bg-slate-100 border-b border-slate-200 px-3 py-2 flex items-center justify-between select-none shrink-0">
-                <span className="font-bold text-[13px] text-slate-800 flex items-center gap-2">
+              <div className={`px-3 py-2 flex items-center justify-between select-none shrink-0 transition-colors duration-300 ${
+                isDark ? 'bg-zinc-950 border-b border-zinc-850' : 'bg-slate-100 border-b border-slate-200'
+              }`}>
+                <span className={`font-bold text-[13px] flex items-center gap-2 ${isDark ? 'text-amber-400' : 'text-slate-800'}`}>
                   <span className="w-2.5 h-2.5 bg-blue-600 rounded-xs"></span>
                   {widget.title}
                 </span>
 
-                <div className="flex items-center gap-1.5 text-slate-400">
+                <div className={`flex items-center gap-1.5 ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>
                   {/* Move actions */}
                   <button 
                     onClick={() => moveWidget(index, 'up')}
                     disabled={index === 0}
-                    className="p-0.5 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
+                    className={`p-0.5 disabled:opacity-30 cursor-pointer ${isDark ? 'hover:text-zinc-100' : 'hover:text-slate-700'}`}
                     title="تحريك لأعلى"
                   >
                     <ChevronUp className="w-3.5 h-3.5" />
@@ -312,13 +318,13 @@ export const Dashboard: React.FC = () => {
                   <button 
                     onClick={() => moveWidget(index, 'down')}
                     disabled={index === widgets.length - 1}
-                    className="p-0.5 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
+                    className={`p-0.5 disabled:opacity-30 cursor-pointer ${isDark ? 'hover:text-zinc-100' : 'hover:text-slate-700'}`}
                     title="تحريك لأسفل"
                   >
                     <ChevronDown className="w-3.5 h-3.5" />
                   </button>
 
-                  <div className="w-[1px] h-3 bg-slate-300 mx-1" />
+                  <div className={`w-[1px] h-3 mx-1 ${isDark ? 'bg-zinc-800' : 'bg-slate-300'}`} />
 
                   {/* Refresh */}
                   <button 
@@ -334,7 +340,7 @@ export const Dashboard: React.FC = () => {
                   {/* Minimize */}
                   <button 
                     onClick={() => toggleMinimize(widget.id)}
-                    className="p-0.5 hover:text-slate-700 cursor-pointer"
+                    className={`p-0.5 cursor-pointer ${isDark ? 'hover:text-zinc-100' : 'hover:text-slate-700'}`}
                     title={widget.isMinimized ? 'توسيع' : 'تصغير'}
                   >
                     <Minimize2 className="w-3.5 h-3.5" />
@@ -353,47 +359,47 @@ export const Dashboard: React.FC = () => {
 
               {/* Widget Body */}
               {!widget.isMinimized && (
-                <div className="p-3.5 flex-1 overflow-y-auto text-xs text-slate-700">
+                <div className={`p-3.5 flex-1 overflow-y-auto text-xs ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>
                   
                   {/* GENERAL STATS WIDGET */}
                   {widget.id === 'general' && (
                     <div className="grid grid-cols-2 gap-2.5 h-full">
-                      <div className="bg-blue-50/50 p-2.5 rounded border border-blue-100 flex flex-col justify-between">
-                        <span className="text-slate-500 text-[11px] font-bold flex items-center gap-1">
+                      <div className={`p-2.5 rounded border flex flex-col justify-between ${isDark ? 'bg-blue-950/25 border-blue-900/30 text-blue-300' : 'bg-blue-50/50 border-blue-100 text-blue-900'}`}>
+                        <span className={`text-[11px] font-bold flex items-center gap-1 ${isDark ? 'text-blue-400' : 'text-slate-500'}`}>
                           <Receipt className="w-3.5 h-3.5 text-blue-500" />
                           <span>إجمالي الفواتير</span>
                         </span>
-                        <div className="text-[15px] font-bold text-blue-900 font-mono text-left">
+                        <div className={`text-[15px] font-bold font-mono text-left ${isDark ? 'text-blue-200' : 'text-blue-900'}`}>
                           {(totalSalesValue + totalPurchasesValue).toLocaleString()} <span className="text-[10px]">ر.س</span>
                         </div>
                       </div>
 
-                      <div className="bg-emerald-50/50 p-2.5 rounded border border-emerald-100 flex flex-col justify-between">
-                        <span className="text-slate-500 text-[11px] font-bold flex items-center gap-1">
+                      <div className={`p-2.5 rounded border flex flex-col justify-between ${isDark ? 'bg-emerald-950/25 border-emerald-900/30 text-emerald-300' : 'bg-emerald-50/50 border-emerald-100 text-emerald-900'}`}>
+                        <span className={`text-[11px] font-bold flex items-center gap-1 ${isDark ? 'text-emerald-400' : 'text-slate-500'}`}>
                           <Package className="w-3.5 h-3.5 text-emerald-500" />
                           <span>قيمة المخزون</span>
                         </span>
-                        <div className="text-[15px] font-bold text-emerald-900 font-mono text-left">
+                        <div className={`text-[15px] font-bold font-mono text-left ${isDark ? 'text-emerald-200' : 'text-emerald-900'}`}>
                           {totalStockValue.toLocaleString()} <span className="text-[10px]">ر.س</span>
                         </div>
                       </div>
 
-                      <div className="bg-amber-50/50 p-2.5 rounded border border-amber-100 flex flex-col justify-between">
-                        <span className="text-slate-500 text-[11px] font-bold flex items-center gap-1">
+                      <div className={`p-2.5 rounded border flex flex-col justify-between ${isDark ? 'bg-amber-950/25 border-amber-900/30 text-amber-300' : 'bg-amber-50/50 border-amber-100 text-amber-900'}`}>
+                        <span className={`text-[11px] font-bold flex items-center gap-1 ${isDark ? 'text-amber-400' : 'text-slate-500'}`}>
                           <Users className="w-3.5 h-3.5 text-amber-500" />
                           <span>العملاء والذمم</span>
                         </span>
-                        <div className="text-[15px] font-bold text-amber-900 font-mono text-left">
+                        <div className={`text-[15px] font-bold font-mono text-left ${isDark ? 'text-amber-200' : 'text-amber-900'}`}>
                           {customers.length} <span className="text-[10px]">حسابات</span>
                         </div>
                       </div>
 
-                      <div className="bg-purple-50/50 p-2.5 rounded border border-purple-100 flex flex-col justify-between">
-                        <span className="text-slate-500 text-[11px] font-bold flex items-center gap-1">
+                      <div className={`p-2.5 rounded border flex flex-col justify-between ${isDark ? 'bg-purple-950/25 border-purple-900/30 text-purple-300' : 'bg-purple-50/50 border-purple-100 text-purple-900'}`}>
+                        <span className={`text-[11px] font-bold flex items-center gap-1 ${isDark ? 'text-purple-400' : 'text-slate-500'}`}>
                           <Landmark className="w-3.5 h-3.5 text-purple-500" />
                           <span>المواد المعرفة</span>
                         </span>
-                        <div className="text-[15px] font-bold text-purple-900 font-mono text-left">
+                        <div className={`text-[15px] font-bold font-mono text-left ${isDark ? 'text-purple-200' : 'text-purple-900'}`}>
                           {items.length} <span className="text-[10px]">كرت مادة</span>
                         </div>
                       </div>
@@ -408,10 +414,10 @@ export const Dashboard: React.FC = () => {
                           key={alt.id} 
                           className={`p-2 rounded border flex items-start gap-2 ${
                             alt.type === 'danger' 
-                              ? 'bg-red-50 border-red-200 text-red-900' 
+                              ? isDark ? 'bg-red-950/30 border-red-900/40 text-red-300' : 'bg-red-50 border-red-200 text-red-900' 
                               : alt.type === 'warning'
-                              ? 'bg-amber-50 border-amber-200 text-amber-900'
-                              : 'bg-blue-50 border-blue-200 text-blue-900'
+                              ? isDark ? 'bg-amber-950/30 border-amber-900/40 text-amber-300' : 'bg-amber-50 border-amber-200 text-amber-900'
+                              : isDark ? 'bg-blue-950/30 border-blue-900/40 text-blue-300' : 'bg-blue-50 border-blue-200 text-blue-900'
                           }`}
                         >
                           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -433,11 +439,13 @@ export const Dashboard: React.FC = () => {
                           placeholder="أضف مهمة محاسبية جديدة..."
                           value={newTaskText}
                           onChange={(e) => setNewTaskText(e.target.value)}
-                          className="flex-1 border border-slate-300 rounded px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                          className={`flex-1 border rounded px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                            isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100' : 'bg-white border-slate-300 text-slate-800'
+                          }`}
                         />
                         <button 
                           type="submit"
-                          className="bg-blue-600 hover:bg-blue-700 text-white rounded px-2 py-1 cursor-pointer transition-colors"
+                          className="bg-blue-600 hover:bg-blue-700 text-white rounded px-2 py-1 cursor-pointer transition-colors font-bold"
                         >
                           إضافة
                         </button>
@@ -445,7 +453,9 @@ export const Dashboard: React.FC = () => {
 
                       <div className="flex-1 overflow-y-auto space-y-1.5">
                         {tasks.map(t => (
-                          <div key={t.id} className="flex items-center justify-between p-1.5 bg-slate-50 border border-slate-200 rounded hover:bg-slate-100/50 transition-colors">
+                          <div key={t.id} className={`flex items-center justify-between p-1.5 border rounded hover:bg-slate-100/50 transition-colors ${
+                            isDark ? 'bg-zinc-950/40 border-zinc-800/60' : 'bg-slate-50 border-slate-200'
+                          }`}>
                             <label className="flex items-center gap-2 cursor-pointer flex-1">
                               <input 
                                 type="checkbox" 
@@ -453,7 +463,11 @@ export const Dashboard: React.FC = () => {
                                 onChange={() => handleToggleTask(t.id)}
                                 className="accent-blue-600 w-3.5 h-3.5"
                               />
-                              <span className={`text-[11px] font-semibold leading-relaxed ${t.done ? 'line-through text-slate-400' : 'text-slate-700'}`}>
+                              <span className={`text-[11px] font-semibold leading-relaxed ${
+                                t.done 
+                                  ? 'line-through text-slate-400' 
+                                  : isDark ? 'text-zinc-200' : 'text-slate-700'
+                              }`}>
                                 {t.title}
                               </span>
                             </label>
@@ -474,52 +488,60 @@ export const Dashboard: React.FC = () => {
                   {widget.id === 'currencies' && (
                     <div className="space-y-3 h-full flex flex-col">
                       {/* Currency calculator */}
-                      <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-md space-y-2 shrink-0">
+                      <div className={`border p-2.5 rounded-md space-y-2 shrink-0 ${isDark ? 'bg-zinc-950/40 border-zinc-800' : 'bg-slate-50 border-slate-200'}`}>
                         <div className="flex items-center gap-1">
                           <input 
                             type="number"
                             value={calcAmount}
                             onChange={(e) => setCalcAmount(Number(e.target.value))}
-                            className="w-20 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-xs text-center font-mono focus:outline-none"
+                            className={`w-20 border rounded px-1.5 py-0.5 text-xs text-center font-mono focus:outline-none ${
+                              isDark ? 'bg-zinc-900 border-zinc-850 text-zinc-100' : 'bg-white border-slate-300 text-slate-800'
+                            }`}
                           />
                           <select 
                             value={calcFrom} 
                             onChange={(e) => setCalcFrom(e.target.value)}
-                            className="text-[11px] bg-white border border-slate-300 rounded p-0.5 font-bold"
+                            className={`text-[11px] border rounded p-0.5 font-bold focus:outline-none ${
+                              isDark ? 'bg-zinc-900 border-zinc-850 text-zinc-100' : 'bg-white border-slate-300 text-slate-800'
+                            }`}
                           >
                             <option value="SAR">ريال (SAR)</option>
                             <option value="USD">دولار (USD)</option>
                             <option value="JOD">دينار (JOD)</option>
                           </select>
-                          <ArrowLeftRight className="w-3 h-3 text-slate-400" />
+                          <ArrowLeftRight className={`w-3 h-3 ${isDark ? 'text-zinc-500' : 'text-slate-400'}`} />
                           <select 
                             value={calcTo} 
                             onChange={(e) => setCalcTo(e.target.value)}
-                            className="text-[11px] bg-white border border-slate-300 rounded p-0.5 font-bold"
+                            className={`text-[11px] border rounded p-0.5 font-bold focus:outline-none ${
+                              isDark ? 'bg-zinc-900 border-zinc-850 text-zinc-100' : 'bg-white border-slate-300 text-slate-800'
+                            }`}
                           >
                             <option value="USD">دولار (USD)</option>
                             <option value="SAR">ريال (SAR)</option>
                             <option value="JOD">دينار (JOD)</option>
                           </select>
                         </div>
-                        <div className="text-center font-mono font-bold text-blue-700 bg-blue-50/50 py-1.5 rounded border border-blue-100">
+                        <div className={`text-center font-mono font-bold py-1.5 rounded border ${
+                          isDark ? 'bg-blue-950/20 border-blue-900/30 text-blue-300' : 'bg-blue-50/50 border-blue-100 text-blue-700'
+                        }`}>
                           {calcResult} {calcTo === 'USD' ? '$' : calcTo === 'SAR' ? 'ر.س' : 'د.أ'}
                         </div>
                       </div>
 
                       {/* Currency Exchange Rates List */}
                       <div className="flex-1 space-y-1 overflow-y-auto">
-                        <div className="flex justify-between border-b pb-1 font-bold text-slate-400 text-[10px]">
+                        <div className={`flex justify-between border-b pb-1 font-bold text-[10px] ${isDark ? 'border-zinc-800 text-zinc-500' : 'border-slate-150 text-slate-400'}`}>
                           <span>العملة والرمز</span>
                           <span>سعر الصرف الرئيسي</span>
                         </div>
                         <div className="flex justify-between py-0.5">
                           <span>1 دولار أمريكي (USD)</span>
-                          <span className="font-mono font-bold text-slate-800">3.75 ر.س</span>
+                          <span className={`font-mono font-bold ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>3.75 ر.س</span>
                         </div>
                         <div className="flex justify-between py-0.5">
                           <span>1 دينار أردني (JOD)</span>
-                          <span className="font-mono font-bold text-slate-800">5.29 ر.س</span>
+                          <span className={`font-mono font-bold ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>5.29 ر.س</span>
                         </div>
                       </div>
                     </div>
@@ -528,40 +550,42 @@ export const Dashboard: React.FC = () => {
                   {/* PRAYERS WIDGET */}
                   {widget.id === 'prayers' && (
                     <div className="space-y-2 h-full flex flex-col justify-between">
-                      <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 rounded p-2 text-center">
+                      <div className={`border rounded p-2 text-center ${
+                        isDark ? 'bg-emerald-950/20 border-emerald-900/40 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                      }`}>
                         <div className="text-[11px] font-bold flex items-center justify-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                          <Clock className={`w-3.5 h-3.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                           <span>الآذان القادم: {nextPrayer.name}</span>
                         </div>
-                        <div className="text-[16px] font-bold font-mono text-emerald-800 mt-1">
+                        <div className={`text-[16px] font-bold font-mono mt-1 ${isDark ? 'text-emerald-250' : 'text-emerald-800'}`}>
                           باقي {nextPrayer.time}
                         </div>
                       </div>
 
                       <div className="grid grid-cols-3 gap-1.5 text-center flex-1 pt-1.5">
-                        <div className="bg-slate-50 border border-slate-200 p-1 rounded">
-                          <span className="text-[10px] text-slate-400 block">الفجر</span>
-                          <span className="font-mono font-bold text-slate-700 text-[11px]">{prayerTimes.Fajr}</span>
+                        <div className={`p-1 rounded border ${isDark ? 'bg-zinc-950/40 border-zinc-800' : 'bg-slate-50 border-slate-200'}`}>
+                          <span className={`text-[10px] block ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>الفجر</span>
+                          <span className={`font-mono font-bold text-[11px] ${isDark ? 'text-zinc-200' : 'text-slate-700'}`}>{prayerTimes.Fajr}</span>
                         </div>
-                        <div className="bg-slate-50 border border-slate-200 p-1 rounded">
-                          <span className="text-[10px] text-slate-400 block">الظهر</span>
-                          <span className="font-mono font-bold text-slate-700 text-[11px]">{prayerTimes.Dhuhr}</span>
+                        <div className={`p-1 rounded border ${isDark ? 'bg-zinc-950/40 border-zinc-800' : 'bg-slate-50 border-slate-200'}`}>
+                          <span className={`text-[10px] block ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>الظهر</span>
+                          <span className={`font-mono font-bold text-[11px] ${isDark ? 'text-zinc-200' : 'text-slate-700'}`}>{prayerTimes.Dhuhr}</span>
                         </div>
-                        <div className="bg-slate-50 border border-slate-200 p-1 rounded">
-                          <span className="text-[10px] text-slate-400 block">العصر</span>
-                          <span className="font-mono font-bold text-slate-700 text-[11px]">{prayerTimes.Asr}</span>
+                        <div className={`p-1 rounded border ${isDark ? 'bg-zinc-950/40 border-zinc-800' : 'bg-slate-50 border-slate-200'}`}>
+                          <span className={`text-[10px] block ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>العصر</span>
+                          <span className={`font-mono font-bold text-[11px] ${isDark ? 'text-zinc-200' : 'text-slate-700'}`}>{prayerTimes.Asr}</span>
                         </div>
-                        <div className="bg-slate-50 border border-slate-200 p-1 rounded">
-                          <span className="text-[10px] text-slate-400 block">المغرب</span>
-                          <span className="font-mono font-bold text-slate-700 text-[11px]">{prayerTimes.Maghrib}</span>
+                        <div className={`p-1 rounded border ${isDark ? 'bg-zinc-950/40 border-zinc-800' : 'bg-slate-50 border-slate-200'}`}>
+                          <span className={`text-[10px] block ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>المغرب</span>
+                          <span className={`font-mono font-bold text-[11px] ${isDark ? 'text-zinc-200' : 'text-slate-700'}`}>{prayerTimes.Maghrib}</span>
                         </div>
-                        <div className="bg-slate-50 border border-slate-200 p-1 rounded">
-                          <span className="text-[10px] text-slate-400 block">العشاء</span>
-                          <span className="font-mono font-bold text-slate-700 text-[11px]">{prayerTimes.Isha}</span>
+                        <div className={`p-1 rounded border ${isDark ? 'bg-zinc-950/40 border-zinc-800' : 'bg-slate-50 border-slate-200'}`}>
+                          <span className={`text-[10px] block ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>العشاء</span>
+                          <span className={`font-mono font-bold text-[11px] ${isDark ? 'text-zinc-200' : 'text-slate-700'}`}>{prayerTimes.Isha}</span>
                         </div>
-                        <div className="bg-slate-50 border border-slate-200 p-1 rounded flex flex-col justify-center items-center">
-                          <span className="text-[9px] text-slate-400">الرياض</span>
-                          <span className="font-bold text-emerald-600 text-[10px]">مواقيت</span>
+                        <div className={`p-1 rounded border flex flex-col justify-center items-center ${isDark ? 'bg-zinc-950/40 border-zinc-800' : 'bg-slate-50 border-slate-200'}`}>
+                          <span className={`text-[9px] ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>الرياض</span>
+                          <span className={`font-bold text-[10px] ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>مواقيت</span>
                         </div>
                       </div>
                     </div>
@@ -584,11 +608,13 @@ export const Dashboard: React.FC = () => {
                           placeholder="05:00 م"
                           value={newReminderTime}
                           onChange={(e) => setNewReminderTime(e.target.value)}
-                          className="w-16 border border-slate-300 rounded px-1 py-0.5 text-[11px] text-center bg-white"
+                          className={`w-16 border rounded px-1 py-0.5 text-[11px] text-center focus:outline-none ${
+                            isDark ? 'bg-zinc-900 border-zinc-850 text-zinc-100' : 'bg-white border-slate-300 text-slate-800'
+                          }`}
                         />
                         <button 
                           type="submit"
-                          className="bg-amber-600 hover:bg-amber-700 text-white rounded px-2 py-0.5 text-[11px] cursor-pointer"
+                          className="bg-amber-600 hover:bg-amber-700 text-white rounded px-2 py-0.5 text-[11px] cursor-pointer font-bold"
                         >
                           حفظ
                         </button>
@@ -596,9 +622,11 @@ export const Dashboard: React.FC = () => {
 
                       <div className="flex-1 overflow-y-auto space-y-1.5">
                         {reminders.map(rem => (
-                          <div key={rem.id} className="p-2 bg-amber-50/50 border border-amber-200 rounded space-y-1">
+                          <div key={rem.id} className={`p-2 rounded space-y-1 border ${
+                            isDark ? 'bg-amber-950/20 border-amber-900/40' : 'bg-amber-50/50 border-amber-200'
+                          }`}>
                             <div className="flex justify-between items-start">
-                              <p className="text-[11px] font-bold text-slate-800 leading-relaxed">{rem.text}</p>
+                              <p className={`text-[11px] font-bold leading-relaxed ${isDark ? 'text-amber-200' : 'text-slate-800'}`}>{rem.text}</p>
                               <button 
                                 onClick={() => setReminders(prev => prev.filter(r => r.id !== rem.id))}
                                 className="text-slate-400 hover:text-red-600 p-0.5 cursor-pointer"
@@ -606,7 +634,9 @@ export const Dashboard: React.FC = () => {
                                 <X className="w-3 h-3" />
                               </button>
                             </div>
-                            <span className="text-[9.5px] text-amber-700 bg-amber-100 font-bold px-1.5 py-0.5 rounded-sm font-mono inline-block">
+                            <span className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded-sm font-mono inline-block ${
+                              isDark ? 'text-amber-300 bg-amber-900/50' : 'text-amber-700 bg-amber-100'
+                            }`}>
                               تنبيه: {rem.time}
                             </span>
                           </div>
@@ -620,34 +650,42 @@ export const Dashboard: React.FC = () => {
                     <div className="grid grid-cols-2 gap-2 h-full">
                       <button 
                         onClick={() => openWindow('invoice', 'فاتورة مبيعات جديدة', { invoiceType: 'sale' })}
-                        className="p-3 bg-slate-50 border border-slate-200 hover:border-blue-300 hover:bg-blue-50/10 rounded flex flex-col items-center justify-center gap-1 text-center transition-all cursor-pointer group"
+                        className={`p-3 rounded flex flex-col items-center justify-center gap-1 text-center transition-all cursor-pointer group border ${
+                          isDark ? 'bg-zinc-950/50 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/30' : 'bg-slate-50 border-slate-200 hover:border-blue-300 hover:bg-blue-50/10'
+                        }`}
                       >
-                        <Receipt className="w-6 h-6 text-blue-600 group-hover:scale-110 transition-transform" />
-                        <span className="font-bold text-slate-700 text-[11.5px]">فاتورة مبيعات</span>
+                        <Receipt className="w-6 h-6 text-blue-500 group-hover:scale-110 transition-transform" />
+                        <span className={`font-bold text-[11.5px] ${isDark ? 'text-zinc-250' : 'text-slate-700'}`}>فاتورة مبيعات</span>
                       </button>
 
                       <button 
                         onClick={() => openWindow('journal_entry', 'سند قيد جديد')}
-                        className="p-3 bg-slate-50 border border-slate-200 hover:border-blue-300 hover:bg-blue-50/10 rounded flex flex-col items-center justify-center gap-1 text-center transition-all cursor-pointer group"
+                        className={`p-3 rounded flex flex-col items-center justify-center gap-1 text-center transition-all cursor-pointer group border ${
+                          isDark ? 'bg-zinc-950/50 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/30' : 'bg-slate-50 border-slate-200 hover:border-blue-300 hover:bg-blue-50/10'
+                        }`}
                       >
-                        <CheckSquare className="w-6 h-6 text-amber-600 group-hover:scale-110 transition-transform" />
-                        <span className="font-bold text-slate-700 text-[11.5px]">سند قيد يومية</span>
+                        <CheckSquare className="w-6 h-6 text-amber-500 group-hover:scale-110 transition-transform" />
+                        <span className={`font-bold text-[11.5px] ${isDark ? 'text-zinc-250' : 'text-slate-700'}`}>سند قيد يومية</span>
                       </button>
 
                       <button 
                         onClick={() => openWindow('chart_of_accounts', 'دليل الحسابات المالي')}
-                        className="p-3 bg-slate-50 border border-slate-200 hover:border-blue-300 hover:bg-blue-50/10 rounded flex flex-col items-center justify-center gap-1 text-center transition-all cursor-pointer group"
+                        className={`p-3 rounded flex flex-col items-center justify-center gap-1 text-center transition-all cursor-pointer group border ${
+                          isDark ? 'bg-zinc-950/50 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/30' : 'bg-slate-50 border-slate-200 hover:border-blue-300 hover:bg-blue-50/10'
+                        }`}
                       >
-                        <Landmark className="w-6 h-6 text-emerald-600 group-hover:scale-110 transition-transform" />
-                        <span className="font-bold text-slate-700 text-[11.5px]">دليل الحسابات</span>
+                        <Landmark className="w-6 h-6 text-emerald-500 group-hover:scale-110 transition-transform" />
+                        <span className={`font-bold text-[11.5px] ${isDark ? 'text-zinc-250' : 'text-slate-700'}`}>دليل الحسابات</span>
                       </button>
 
                       <button 
                         onClick={() => openWindow('reports', 'ميزان المراجعة العام', { reportType: 'trial_balance' })}
-                        className="p-3 bg-slate-50 border border-slate-200 hover:border-blue-300 hover:bg-blue-50/10 rounded flex flex-col items-center justify-center gap-1 text-center transition-all cursor-pointer group"
+                        className={`p-3 rounded flex flex-col items-center justify-center gap-1 text-center transition-all cursor-pointer group border ${
+                          isDark ? 'bg-zinc-950/50 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/30' : 'bg-slate-50 border-slate-200 hover:border-blue-300 hover:bg-blue-50/10'
+                        }`}
                       >
-                        <TrendingUp className="w-6 h-6 text-purple-600 group-hover:scale-110 transition-transform" />
-                        <span className="font-bold text-slate-700 text-[11.5px]">ميزان المراجعة</span>
+                        <TrendingUp className="w-6 h-6 text-purple-500 group-hover:scale-110 transition-transform" />
+                        <span className={`font-bold text-[11.5px] ${isDark ? 'text-zinc-250' : 'text-slate-700'}`}>ميزان المراجعة</span>
                       </button>
                     </div>
                   )}
@@ -655,18 +693,18 @@ export const Dashboard: React.FC = () => {
                   {/* ITEMS STOCK WIDGET */}
                   {widget.id === 'items_widget' && (
                     <div className="space-y-2 h-full flex flex-col justify-between">
-                      <div className="flex justify-between border-b pb-1 font-bold text-slate-400 text-[10px] shrink-0">
+                      <div className={`flex justify-between border-b pb-1 font-bold text-[10px] shrink-0 ${isDark ? 'border-zinc-800 text-zinc-500' : 'border-slate-150 text-slate-400'}`}>
                         <span>اسم المادة والرمز</span>
                         <span>الرصيد الفعلي الحالي</span>
                       </div>
-                      <div className="flex-1 overflow-y-auto space-y-1.5">
+                      <div className="flex-1 overflow-y-auto space-y-1.5 font-sans">
                         {items.slice(0, 4).map(it => (
-                          <div key={it.id} className="flex justify-between items-center py-0.5 border-b border-dashed border-slate-100">
-                            <span className="text-[11px] text-slate-700 font-medium truncate max-w-[150px]">{it.name}</span>
+                          <div key={it.id} className={`flex justify-between items-center py-0.5 border-b border-dashed ${isDark ? 'border-zinc-800' : 'border-slate-100'}`}>
+                            <span className={`text-[11px] font-medium truncate max-w-[150px] ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>{it.name}</span>
                             <span className={`font-mono font-bold px-2 py-0.5 rounded text-[10.5px] ${
                               it.currentStock <= it.minLimit 
-                                ? 'bg-red-100 text-red-700 animate-pulse' 
-                                : 'bg-slate-100 text-slate-800'
+                                ? isDark ? 'bg-red-950/40 text-red-300 animate-pulse' : 'bg-red-100 text-red-700 animate-pulse' 
+                                : isDark ? 'bg-zinc-800 text-zinc-300' : 'bg-slate-100 text-slate-800'
                             }`}>
                               {it.currentStock} {it.unit}
                             </span>

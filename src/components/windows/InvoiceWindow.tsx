@@ -3,29 +3,28 @@ import { useErp } from '../../context/ErpContext';
 import { supabase } from '../../utils/supabase';
 import { ExcelGrid } from '../ExcelGrid';
 import { 
-  FileText, Plus, Trash2, Check, X, Printer, Image as ImageIcon, Settings,
-  Paperclip, Navigation, ArrowLeft, ArrowRight, Search, Barcode, HelpCircle,
-  Copy, RotateCcw, RotateCw, Heart, RefreshCw, Mail, FileSpreadsheet, FileDown,
-  Info, History, Edit3, CheckCircle, Upload, Eye, Download, Calendar, DollarSign,
-  Briefcase, Warehouse, MapPin, AlertTriangle, Maximize, Minimize, Expand, Shrink,
-  Scissors, Layout, Languages, FileCode, CheckSquare
+  FileText, Plus, Trash2, Check, X, Printer, Settings,
+  ArrowLeft, ArrowRight, Search, Barcode, HelpCircle,
+  Copy, RotateCcw, RotateCw, RefreshCw, Mail, Eye, Download, 
+  Calendar, DollarSign, Briefcase, Warehouse, MapPin, 
+  AlertTriangle, Maximize, Minimize, Expand, Shrink,
+  CheckSquare, FileSpreadsheet, Lock, Sparkles, Layout, Database
 } from 'lucide-react';
 import { Invoice, InvoiceGridRow, InvoiceType, Item, PrintTemplate } from '../../types/erp';
 
 interface InvoiceWindowProps {
   invoiceType?: InvoiceType;
-  invoiceId?: string; // Optional if loading an existing one
+  invoiceId?: string; 
   windowId: string;
   onClose: () => void;
 }
 
 interface InvoiceTab {
-  id: string;          // unique tab ID (or database invoice.id)
-  title: string;       // tab visual title (e.g., "فاتورة مبيعات #1024" or "فاتورة مبيعات جديدة")
+  id: string;          
+  title: string;       
   invoiceType: InvoiceType;
-  isNew: boolean;      // is it a brand new unsaved invoice?
+  isNew: boolean;      
   
-  // Header and grid state variables
   invoiceNo: string;
   date: string;
   description: string;
@@ -42,11 +41,9 @@ interface InvoiceTab {
   posted: boolean;
   entryCreated: boolean;
 
-  // Items Grid state
   gridRows: InvoiceGridRow[];
   selectedGridRowId: string;
 
-  // Adjustments & Totals
   discount: number;
   addition: number;
   taxPercent: number;
@@ -56,7 +53,6 @@ interface InvoiceTab {
   originalInvoiceRef: string;
   notes: string;
 
-  // Additional rich features
   attachments: { name: string; url: string }[];
   stickyNotes: string;
   auditLogs: string[];
@@ -81,60 +77,49 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
     setInvoices,
     addInvoice, 
     deleteInvoice,
-    showToast,
-    favorites,
-    toggleFavorite,
-    templates
+    showToast
   } = useErp();
 
   // Multi-Tab management
   const [tabs, setTabs] = useState<InvoiceTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string>('');
   const [barcodeInput, setBarcodeInput] = useState('');
+  const [gridActiveCellAddress, setGridActiveCellAddress] = useState('خارج الجدول');
 
-  // Resizable Panels States (remembered per user in LocalStorage)
+  // Menu Dropdown states
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+
+  // Layout states
   const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
-    return Number(localStorage.getItem('invoice_sidebar_width') || '285');
+    return Number(localStorage.getItem('invoice_sidebar_width') || '280');
   });
   const [gridHeight, setGridHeight] = useState<number>(() => {
-    return Number(localStorage.getItem('invoice_grid_height') || '360');
+    return Number(localStorage.getItem('invoice_grid_height') || '350');
   });
 
   // Print templates visual designer & settings
   const [selectedPrintModel, setSelectedPrintModel] = useState<string>('A4_Full');
   const [printCustomizations, setPrintCustomizations] = useState({
-    title: 'فاتورة ضريبية مبسطة',
-    subTitle: 'شركة الميزان للتجارة والصناعة دوت نت',
+    title: 'فاتورة ضريبية مبسطة دوت نت',
+    subTitle: 'برنامج الميزان لإدارة الحسابات والمستودعات',
     showLogo: true,
     logoIcon: '⚖️',
     showPrices: true,
     showQuantities: true,
     showBarcode: true,
     showQRCode: true,
-    colorTheme: '#1e40af', // Blue
-    fontSize: '12px',
+    colorTheme: '#1e40af', 
+    fontSize: '11px',
     marginSize: '15px'
   });
 
-  // Modals & Popovers States
-  const [isGearMenuOpen, setIsGearMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isAttachmentsOpen, setIsAttachmentsOpen] = useState(false);
-  const [isEmailOpen, setIsEmailOpen] = useState(false);
-  const [isNotesOpen, setIsNotesOpen] = useState(false);
-  const [isAuditLogsOpen, setIsAuditLogsOpen] = useState(false);
+  // Windows Modals
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
-  // Email form state
-  const [emailAddress, setEmailAddress] = useState('');
-  const [emailSubject, setEmailSubject] = useState('');
-  const [emailBody, setEmailBody] = useState('');
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-
-  // Search filter
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isAuditLogsOpen, setIsAuditLogsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Full screen mode
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Ref trackers for panel dragging
@@ -142,7 +127,7 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
   const horizontalDragRef = useRef<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Helper to create empty default tab structure
+  // Create empty default tab structure
   const createNewTabStructure = (type: InvoiceType, loadId?: string): InvoiceTab => {
     const matchedInv = loadId ? invoices.find(i => i.id === loadId) : null;
     const tid = loadId || `tab-new-${Date.now()}`;
@@ -226,35 +211,26 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
     }
   };
 
-  // Switch types or load active invoice
+  // Initialize tabs
   useEffect(() => {
-    // Initialize default tab
     const initialTab = createNewTabStructure((invoiceType || 'sale') as InvoiceType, invoiceId);
     setTabs([initialTab]);
     setActiveTabId(initialTab.id);
   }, [invoiceId, invoiceType]);
 
-  // Load all invoices from Supabase on mount
+  // Sync relational database
   useEffect(() => {
     async function fetchAllInvoicesFromDb() {
       if (!connectedDbId) return;
       try {
-        // Fetch Sales Invoices & their items
         const { data: salesData, error: salesError } = await supabase
           .from('sales_invoices')
-          .select(`
-            *,
-            sales_invoice_items (*)
-          `)
+          .select(`*, sales_invoice_items (*)`)
           .eq('company_id', connectedDbId);
 
-        // Fetch Purchase Invoices & their items
         const { data: purchaseData, error: purchaseError } = await supabase
           .from('purchase_invoices')
-          .select(`
-            *,
-            purchase_invoice_items (*)
-          `)
+          .select(`*, purchase_invoice_items (*)`)
           .eq('company_id', connectedDbId);
 
         if (salesError || purchaseError) {
@@ -306,7 +282,7 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
           date: row.date,
           description: row.description || '',
           branchId: row.branch_id,
-          customerId: row.supplier_id, // Map supplier_id to customerId parameter
+          customerId: row.supplier_id, 
           currencyId: currencies[0]?.id || 'cur-1',
           exchangeRate: 1.0,
           paymentMethod: row.payment_method as any,
@@ -346,33 +322,30 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
     fetchAllInvoicesFromDb();
   }, [connectedDbId, currencies, setInvoices]);
 
-  // Active Tab structure helper
   const activeTab = tabs.find(t => t.id === activeTabId) || tabs[0];
 
-  // Modify active tab property
   const updateActiveTab = useCallback((updater: (prev: InvoiceTab) => Partial<InvoiceTab>) => {
     if (!activeTabId) return;
     setTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, ...updater(t) } : t));
   }, [activeTabId]);
 
-  // Helper for arabic invoice labels
   function getArabicTypeLabel(type: InvoiceType): string {
     switch (type) {
       case 'sale': return 'فاتورة مبيعات';
       case 'purchase': return 'فاتورة مشتريات';
       case 'sale_return': return 'مرتجع مبيعات';
       case 'purchase_return': return 'مرتجع مشتريات';
-      case 'inward': return 'فاتورة إدخال مستودعي';
-      case 'outward': return 'فاتورة إخراج مستودعي';
+      case 'inward': return 'إدخال مستودعي';
+      case 'outward': return 'إخراج مستودعي';
       case 'opening_stock': return 'بضاعة أول المدة';
       case 'closing_stock': return 'بضاعة آخر المدة';
       case 'transfer_entry': return 'مناقلة مستودعية بقيد';
       case 'transfer_no_entry': return 'مناقلة مستودعية بلا قيد';
-      default: return 'سند فاتورة الميزان';
+      default: return 'سند محاسبي';
     }
   }
 
-  // Handle panel resizing dragging mechanisms
+  // Resizing hooks
   const handleVerticalSeparatorMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     verticalDragRef.current = true;
@@ -387,16 +360,15 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
     const handleMouseMove = (e: MouseEvent) => {
       if (verticalDragRef.current && containerRef.current) {
         const containerRect = containerRef.current.getBoundingClientRect();
-        // Since we are RTL, the sidebar is on the left side, drag moves relative to left edge
-        const newWidth = e.clientX - containerRect.left;
-        const boundedWidth = Math.max(200, Math.min(newWidth, 550));
+        const newWidth = containerRect.right - e.clientX; // RTL support
+        const boundedWidth = Math.max(150, Math.min(newWidth, 450));
         setSidebarWidth(boundedWidth);
         localStorage.setItem('invoice_sidebar_width', String(boundedWidth));
       }
       if (horizontalDragRef.current && containerRef.current) {
         const containerRect = containerRef.current.getBoundingClientRect();
-        const newHeight = e.clientY - containerRect.top - 100; // subtract upper components
-        const boundedHeight = Math.max(150, Math.min(newHeight, 600));
+        const newHeight = e.clientY - containerRect.top - 180; 
+        const boundedHeight = Math.max(120, Math.min(newHeight, 550));
         setGridHeight(boundedHeight);
         localStorage.setItem('invoice_grid_height', String(boundedHeight));
       }
@@ -415,7 +387,7 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
     };
   }, []);
 
-  // Hotkey binds inside the window for quick saves & print
+  // Keyboard Event Hooks
   useEffect(() => {
     const handleWindowShortcuts = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
@@ -430,6 +402,22 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
         e.preventDefault();
         handleOpenNewTab();
       }
+      if (e.key === 'F2') {
+        e.preventDefault();
+        handleOpenNewTab();
+      }
+      if (e.key === 'F5') {
+        e.preventDefault();
+        handleSaveActiveInvoice();
+      }
+      if (e.key === 'F6') {
+        e.preventDefault();
+        handleSilentPrint();
+      }
+      if (e.key === 'F8') {
+        e.preventDefault();
+        setIsPreviewOpen(true);
+      }
     };
     window.addEventListener('keydown', handleWindowShortcuts);
     return () => window.removeEventListener('keydown', handleWindowShortcuts);
@@ -437,23 +425,20 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
 
   if (!activeTab) {
     return (
-      <div className="flex items-center justify-center h-full bg-slate-100 font-bold" dir="rtl">
-        <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
-        <span className="mr-2 text-slate-600">جاري تحميل واجهات الميزان دوت نت...</span>
+      <div className="flex flex-col items-center justify-center h-full bg-[#f0f0f0] border-2 border-zinc-400 text-zinc-800 font-bold" dir="rtl">
+        <RefreshCw className="w-8 h-8 text-blue-800 animate-spin" />
+        <span className="mt-2 text-xs">جاري تحميل واجهة الميزان ERP...</span>
       </div>
     );
   }
 
-  // Active item details lookup
   const currentItemInTab = items.find(it => it.id === activeTab.gridRows.find(r => r.id === activeTab.selectedGridRowId)?.itemId) || items[0];
 
-  // Switch tab
   const handleSwitchTab = (id: string) => {
     setActiveTabId(id);
-    showToast(`تم التبديل إلى: ${tabs.find(t => t.id === id)?.title}`, 'info');
+    showToast(`المستند النشط: ${tabs.find(t => t.id === id)?.title}`, 'info');
   };
 
-  // Close tab
   const handleCloseTab = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (tabs.length === 1) {
@@ -468,7 +453,6 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
     showToast('تم إغلاق التبويب المفتوح.', 'info');
   };
 
-  // Open brand new tab
   const handleOpenNewTab = (type: InvoiceType = (invoiceType || 'sale') as InvoiceType) => {
     const newTab = createNewTabStructure(type);
     setTabs(prev => [...prev, newTab]);
@@ -476,7 +460,7 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
     showToast(`تم فتح تبويب ${getArabicTypeLabel(type)} جديد`, 'success');
   };
 
-  // Save invoice to global context and Supabase
+  // Save active invoice to context + supabase
   const handleSaveActiveInvoice = async () => {
     if (!activeTab.gridRows || activeTab.gridRows.length === 0) {
       showToast('يجب أن تحتوي الفاتورة على صنف واحد على الأقل قبل الحفظ.', 'warning');
@@ -519,13 +503,12 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
       notes: activeTab.notes,
       attachments: activeTab.attachments,
       stickyNotes: activeTab.stickyNotes,
-      auditLogs: [...activeTab.auditLogs, `تم إجراء مزامنة وتخزين نهائي للمستند في ${new Date().toLocaleString('ar-SA')}`]
+      auditLogs: [...activeTab.auditLogs, `تم التخزين والمزامنة مع قاعدة البيانات السحابية في ${new Date().toLocaleTimeString('ar-SA')}`]
     };
 
     if (connectedDbId) {
       try {
         if (activeTab.invoiceType === 'sale' || activeTab.invoiceType === 'sale_return') {
-          // 1. Upsert into sales_invoices
           const { error: invoiceError } = await supabase
             .from('sales_invoices')
             .upsert({
@@ -533,7 +516,7 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
               company_id: connectedDbId,
               branch_id: activeTab.branchId,
               customer_id: activeTab.customerId || null,
-              warehouse_id: activeTab.warehouse_id || null,
+              warehouse_id: activeTab.warehouseId || null,
               invoice_no: activeTab.invoiceNo,
               date: activeTab.date,
               payment_method: activeTab.paymentMethod,
@@ -548,13 +531,11 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
 
           if (invoiceError) throw invoiceError;
 
-          // 2. Delete old items
           await supabase
             .from('sales_invoice_items')
             .delete()
             .eq('invoice_id', savedInvoiceId);
 
-          // 3. Insert new items
           const itemRecords = activeTab.gridRows.map((r, index) => ({
             id: `item-${savedInvoiceId}-${index}-${Date.now()}`,
             company_id: connectedDbId,
@@ -574,15 +555,14 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
           if (itemsError) throw itemsError;
 
         } else if (activeTab.invoiceType === 'purchase' || activeTab.invoiceType === 'purchase_return') {
-          // 1. Upsert into purchase_invoices
           const { error: invoiceError } = await supabase
             .from('purchase_invoices')
             .upsert({
               id: savedInvoiceId,
               company_id: connectedDbId,
               branch_id: activeTab.branchId,
-              supplier_id: activeTab.customerId || null, // Map customerId parameter to supplier_id column for purchase invoices
-              warehouse_id: activeTab.warehouse_id || null,
+              supplier_id: activeTab.customerId || null, 
+              warehouse_id: activeTab.warehouseId || null,
               invoice_no: activeTab.invoiceNo,
               date: activeTab.date,
               payment_method: activeTab.paymentMethod,
@@ -597,13 +577,11 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
 
           if (invoiceError) throw invoiceError;
 
-          // 2. Delete old items
           await supabase
             .from('purchase_invoice_items')
             .delete()
             .eq('invoice_id', savedInvoiceId);
 
-          // 3. Insert new items
           const itemRecords = activeTab.gridRows.map((r, index) => ({
             id: `item-${savedInvoiceId}-${index}-${Date.now()}`,
             company_id: connectedDbId,
@@ -629,10 +607,8 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
       }
     }
 
-    // Call context to update local balances and logs
     addInvoice(savedInvoice);
 
-    // Update active tab isNew and ID
     setTabs(prev => prev.map(t => t.id === activeTabId ? {
       ...t,
       id: savedInvoice.id,
@@ -642,27 +618,9 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
     } : t));
     setActiveTabId(savedInvoice.id);
 
-    showToast(`تم حفظ الفاتورة رقم ${savedInvoice.invoiceNo} ومزامنة تفاصيل الحسابات بنجاح.`, 'success');
+    showToast(`تم حفظ السند المحاسبي ${savedInvoice.invoiceNo} بنجاح.`, 'success');
   };
 
-  // Fullscreen support
-  const toggleFullscreen = () => {
-    if (!isFullscreen) {
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-      }
-      setIsFullscreen(true);
-      showToast('تم تفعيل وضع ملء الشاشة الكامل لبرنامج الميزان.', 'success');
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
-      setIsFullscreen(false);
-      showToast('تم الخروج من وضع ملء الشاشة.', 'info');
-    }
-  };
-
-  // Direct Silent Printing handler using clean hidden iframe markup
   const handleSilentPrint = () => {
     const printFrame = document.createElement('iframe');
     printFrame.style.position = 'absolute';
@@ -678,7 +636,7 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
     frameDoc.write(printHTML);
     frameDoc.close();
 
-    showToast('جاري توجيه مستند الطباعة إلى جهاز الطباعة بشكل صامت ومباشر...', 'info');
+    showToast('جاري تحضير ملقم الطباعة وتوجيه المستند للطباعة المباشرة...', 'info');
     setTimeout(() => {
       printFrame.contentWindow?.focus();
       printFrame.contentWindow?.print();
@@ -688,264 +646,44 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
     }, 500);
   };
 
-  // Math totals calculation
+  const handleDeleteActiveInvoice = () => {
+    if (activeTab.isNew) {
+      showToast('المسودة لم تحفظ بعد، تم إلغاؤها.', 'info');
+      onClose();
+      return;
+    }
+    deleteInvoice(activeTab.id);
+    showToast('تم حذف السند بالكامل من النظام.', 'warning');
+    onClose();
+  };
+
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      }
+      setIsFullscreen(true);
+      showToast('تم تشغيل وضع سطح المكتب الكامل', 'success');
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+      setIsFullscreen(false);
+      showToast('تم الخروج من وضع ملء الشاشة.', 'info');
+    }
+  };
+
   const subtotal = activeTab.gridRows.reduce((acc, r) => acc + Number(r.total || 0), 0);
   const taxAmount = (subtotal - activeTab.discount + activeTab.addition) * (activeTab.taxPercent / 100);
   const netAmount = subtotal - activeTab.discount + activeTab.addition + taxAmount + activeTab.expenses;
 
-  // ZATCA Base64 TLV Generator simulation for real Zatca visual compliance
-  const getZatcaTLVQRCode = (): string => {
-    // Generate actual authentic-looking TLV encoding block
-    const seller = "شركة الميزان للتجارة دوت نت";
-    const vatNo = "300054321000003";
-    const time = `${activeTab.date}T12:00:00Z`;
-    const total = netAmount.toFixed(2);
-    const vat = taxAmount.toFixed(2);
-
-    const toHex = (tag: number, val: string) => {
-      const tagStr = tag.toString(16).padStart(2, '0');
-      const utf8Encoder = new TextEncoder();
-      const bytes = utf8Encoder.encode(val);
-      const lenStr = bytes.length.toString(16).padStart(2, '0');
-      const hexVal = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-      return tagStr + lenStr + hexVal;
-    };
-
-    try {
-      const hex = toHex(1, seller) + toHex(2, vatNo) + toHex(3, time) + toHex(4, total) + toHex(5, vat);
-      const binary = new Uint8Array(hex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
-      let base64 = btoa(String.fromCharCode(...binary));
-      return base64;
-    } catch (_) {
-      return "ZATCA_E_INVOICING_MOCK_QR_DATA_BASE64_AL_MEEZAN";
-    }
-  };
-
-  // Compile full styled HTML markup for Printing
-  const renderPrintTemplateHTML = (): string => {
-    const activeCustomer = customers.find(c => c.id === activeTab.customerId);
-    const activeWarehouse = warehouses.find(w => w.id === activeTab.warehouseId);
-    
-    // Choose model sizing classes
-    let paperWidth = '210mm';
-    let paperHeight = '297mm';
-    if (selectedPrintModel.includes('A5_Half')) {
-      paperWidth = '148mm';
-      paperHeight = '210mm';
-    } else if (selectedPrintModel.includes('Thermal_80')) {
-      paperWidth = '80mm';
-      paperHeight = 'auto';
-    } else if (selectedPrintModel.includes('Thermal_58')) {
-      paperWidth = '58mm';
-      paperHeight = 'auto';
-    }
-
-    const tLines = activeTab.gridRows.map((row, index) => {
-      const item = items.find(it => it.id === row.itemId);
-      return `
-        <tr style="border-bottom: 1px solid #ddd;">
-          <td style="padding: 6px; text-align: center; font-family: monospace;">${index + 1}</td>
-          <td style="padding: 6px; text-align: right;">${item?.name || 'صنف سلعي'}</td>
-          <td style="padding: 6px; text-align: center;">${item?.code || ''}</td>
-          <td style="padding: 6px; text-align: center;">${row.unit}</td>
-          ${printCustomizations.showQuantities ? `<td style="padding: 6px; text-align: center; font-family: monospace;">${row.quantity}</td>` : ''}
-          ${printCustomizations.showPrices ? `<td style="padding: 6px; text-align: center; font-family: monospace;">${row.unitPrice.toLocaleString()}</td>` : ''}
-          ${printCustomizations.showPrices ? `<td style="padding: 6px; text-align: left; font-family: monospace; font-weight: bold;">${row.total.toLocaleString()}</td>` : ''}
-        </tr>
-      `;
-    }).join('');
-
-    return `
-      <!DOCTYPE html>
-      <html dir="rtl" lang="ar">
-      <head>
-        <meta charset="UTF-8">
-        <title>طباعة ${getArabicTypeLabel(activeTab.invoiceType)}</title>
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Cairo:wght@400;700;900&display=swap');
-          body {
-            font-family: 'Cairo', 'Inter', sans-serif;
-            margin: 0;
-            padding: ${printCustomizations.marginSize};
-            background: #white;
-            color: #111;
-            font-size: ${printCustomizations.fontSize};
-            width: ${paperWidth};
-            height: ${paperHeight};
-            direction: rtl;
-          }
-          .invoice-card {
-            background: #white;
-            padding: 10px;
-          }
-          .title-text {
-            color: ${printCustomizations.colorTheme};
-            font-size: 1.5rem;
-            font-weight: 900;
-            margin-bottom: 2px;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: ${printCustomizations.fontSize};
-          }
-          th {
-            background: ${printCustomizations.colorTheme};
-            color: white;
-            padding: 8px;
-            text-align: right;
-          }
-          .total-box {
-            margin-top: 15px;
-            border: 2px solid ${printCustomizations.colorTheme};
-            border-radius: 6px;
-            padding: 10px;
-            float: left;
-            width: 250px;
-            background: #fcfcfc;
-          }
-          .total-box div {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 4px;
-          }
-          .total-box .net {
-            font-weight: 900;
-            color: ${printCustomizations.colorTheme};
-            border-top: 1px solid #ddd;
-            padding-top: 4px;
-            font-size: 1.1em;
-          }
-          .qrcode-svg {
-            float: right;
-            margin-top: 15px;
-            width: 100px;
-            height: 100px;
-          }
-          @media print {
-            body {
-              padding: 0;
-              margin: 0;
-            }
-            @page {
-              size: ${selectedPrintModel.includes('Thermal') ? 'roll' : 'A4'};
-              margin: ${printCustomizations.marginSize};
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="invoice-card">
-          ${printCustomizations.showLogo ? `
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px double #ccc; padding-bottom: 8px;">
-              <div>
-                <div class="title-text">${printCustomizations.title}</div>
-                <div style="font-weight: bold; color: #666;">${printCustomizations.subTitle}</div>
-              </div>
-              <div style="font-size: 40px;">${printCustomizations.logoIcon}</div>
-            </div>
-          ` : ''}
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; background: #fafafa; border: 1px solid #eee; padding: 10px; border-radius: 6px;">
-            <div>
-              <strong>رقم الفاتورة:</strong> <span style="font-family: monospace;">${activeTab.invoiceNo}</span><br/>
-              <strong>تاريخ الاستخراج:</strong> <span style="font-family: monospace;">${activeTab.date}</span><br/>
-              <strong>الفرع المصدر:</strong> ${branches.find(b => b.id === activeTab.branchId)?.name || 'الرئيسي'}<br/>
-            </div>
-            <div>
-              <strong>العميل / المستلم:</strong> ${activeCustomer?.name || 'مشتري نقدي دائم'}<br/>
-              <strong>مستودع السحب المالي:</strong> ${activeWarehouse?.name || 'مستودع المبيعات'}<br/>
-              <strong>طريقة السداد:</strong> ${activeTab.paymentMethod === 'cash' ? 'نقدي فورياً' : activeTab.paymentMethod === 'bank' ? 'بنكي شبكة' : 'آجل على الحساب'}<br/>
-            </div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 30px; text-align: center;">#</th>
-                <th>اسم الصنف والمواصفات السلعية</th>
-                <th style="text-align: center;">الكود</th>
-                <th style="text-align: center;">الوحدة</th>
-                ${printCustomizations.showQuantities ? '<th style="text-align: center;">الكمية</th>' : ''}
-                ${printCustomizations.showPrices ? '<th style="text-align: center;">السعر</th>' : ''}
-                ${printCustomizations.showPrices ? '<th style="text-align: left;">الإجمالي</th>' : ''}
-              </tr>
-            </thead>
-            <tbody>
-              ${tLines}
-            </tbody>
-          </table>
-
-          <div style="width: 100%; display: block; overflow: hidden; margin-top: 20px;">
-            ${printCustomizations.showQRCode ? `
-              <div class="qrcode-svg">
-                <svg viewBox="0 0 100 100" style="width: 100%; h-full;">
-                  <rect width="100" height="100" fill="white" />
-                  <rect x="5" y="5" width="22" height="22" fill="black" />
-                  <rect x="9" y="9" width="14" height="14" fill="white" />
-                  <rect x="12" y="12" width="8" height="8" fill="black" />
-
-                  <rect x="73" y="5" width="22" height="22" fill="black" />
-                  <rect x="77" y="9" width="14" height="14" fill="white" />
-                  <rect x="80" y="12" width="8" height="8" fill="black" />
-
-                  <rect x="5" y="73" width="22" height="22" fill="black" />
-                  <rect x="9" y="77" width="14" height="14" fill="white" />
-                  <rect x="12" y="80" width="8" height="8" fill="black" />
-
-                  <rect x="40" y="40" width="20" height="20" fill="black" />
-                  <rect x="45" y="45" width="10" height="10" fill="white" />
-
-                  <rect x="35" y="10" width="12" height="6" fill="black" />
-                  <rect x="55" y="15" width="12" height="8" fill="black" />
-                  <rect x="10" y="35" width="14" height="8" fill="black" />
-                  <rect x="75" y="50" width="15" height="10" fill="black" />
-                  <rect x="15" y="55" width="12" height="12" fill="black" />
-                  <rect x="35" y="65" width="22" height="8" fill="black" />
-                </svg>
-              </div>
-            ` : ''}
-
-            ${printCustomizations.showPrices ? `
-              <div class="total-box">
-                <div>
-                  <span>مجموع البنود:</span>
-                  <span style="font-family: monospace;">${subtotal.toLocaleString()} ر.س</span>
-                </div>
-                <div>
-                  <span>الخصم المباشر:</span>
-                  <span style="font-family: monospace; color: red;">-${activeTab.discount.toLocaleString()} ر.س</span>
-                </div>
-                <div>
-                  <span>ضريبة القيمة المضافة ${activeTab.taxPercent}%:</span>
-                  <span style="font-family: monospace; color: red;">${taxAmount.toLocaleString()} ر.س</span>
-                </div>
-                <div class="net">
-                  <span>الصافي المطلوب سداده:</span>
-                  <span style="font-family: monospace;">${netAmount.toLocaleString()} ر.س</span>
-                </div>
-              </div>
-            ` : ''}
-          </div>
-
-          <div style="margin-top: 40px; border-top: 1px dashed #ddd; pt-15px; font-size: 11px; text-align: center; color: #777;">
-            البضاعة المباعة خاضعة للوائح وزارة التجارة وهيئة الزكاة والضريبة والجمارك بالمملكة العربية السعودية.
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-  };
-
-  // Autocomplete fast item addition directly to active row
   const handleBarcodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!barcodeInput.trim()) return;
 
     const matchedItem = items.find(it => it.barcode === barcodeInput || it.code === barcodeInput);
     if (!matchedItem) {
-      showToast(`عذراً، لم يتم العثور على صنف بالباركود أو الرمز: "${barcodeInput}"`, 'error');
+      showToast(`عذراً، لم نجد صنفاً يحمل الرمز أو الباركود: "${barcodeInput}"`, 'error');
       setBarcodeInput('');
       return;
     }
@@ -970,7 +708,7 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
           quantity: 1,
           unitPrice: activeTab.invoiceType.includes('purchase') ? (matchedItem.purchasePrice || 0) : (matchedItem.salePrice || 0),
           unit: matchedItem.unit || 'حبة',
-          notes: 'إضافة سريعة بالباركود',
+          notes: 'قارئ الباركود السريع',
           total: activeTab.invoiceType.includes('purchase') ? (matchedItem.purchasePrice || 0) : (matchedItem.salePrice || 0)
         }
       ];
@@ -978,212 +716,594 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
     }
 
     setBarcodeInput('');
-    showToast(`تمت إضافة صنف بالباركود: ${matchedItem.name}`, 'success');
+    showToast(`تم إدراج: ${matchedItem.name}`, 'success');
+  };
+
+  // Compile print HTML string
+  const renderPrintTemplateHTML = (): string => {
+    const activeCustomer = customers.find(c => c.id === activeTab.customerId);
+    const activeWarehouse = warehouses.find(w => w.id === activeTab.warehouseId);
+    
+    let paperWidth = '210mm';
+    let paperHeight = '297mm';
+    if (selectedPrintModel.includes('A5_Half')) {
+      paperWidth = '148mm';
+      paperHeight = '210mm';
+    } else if (selectedPrintModel.includes('Thermal')) {
+      paperWidth = '80mm';
+      paperHeight = 'auto';
+    }
+
+    const tLines = activeTab.gridRows.map((row, index) => {
+      const item = items.find(it => it.id === row.itemId);
+      return `
+        <tr style="border-bottom: 1px solid #ddd;">
+          <td style="padding: 5px; text-align: center; font-family: monospace;">${index + 1}</td>
+          <td style="padding: 5px; text-align: right;">${item?.name || 'صنف سلعي'}</td>
+          <td style="padding: 5px; text-align: center;">${item?.code || ''}</td>
+          <td style="padding: 5px; text-align: center;">${row.unit}</td>
+          ${printCustomizations.showQuantities ? `<td style="padding: 5px; text-align: center; font-family: monospace;">${row.quantity}</td>` : ''}
+          ${printCustomizations.showPrices ? `<td style="padding: 5px; text-align: center; font-family: monospace;">${row.unitPrice.toFixed(2)}</td>` : ''}
+          ${printCustomizations.showPrices ? `<td style="padding: 5px; text-align: left; font-family: monospace; font-weight: bold;">${row.total.toFixed(2)}</td>` : ''}
+        </tr>
+      `;
+    }).join('');
+
+    return `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="ar">
+      <head>
+        <meta charset="UTF-8">
+        <title>سند طباعة الميزان</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+          body {
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: ${printCustomizations.marginSize};
+            background: white;
+            color: #111;
+            font-size: ${printCustomizations.fontSize};
+            width: ${paperWidth};
+            height: ${paperHeight};
+            direction: rtl;
+          }
+          .title-text {
+            color: ${printCustomizations.colorTheme};
+            font-size: 1.35rem;
+            font-weight: 900;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: ${printCustomizations.fontSize};
+          }
+          th {
+            background: ${printCustomizations.colorTheme};
+            color: white;
+            padding: 6px;
+            text-align: right;
+          }
+          .total-box {
+            margin-top: 10px;
+            border: 2px solid ${printCustomizations.colorTheme};
+            padding: 8px;
+            float: left;
+            width: 220px;
+            background: #fcfcfc;
+          }
+          .total-box div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+          }
+          .total-box .net {
+            font-weight: 900;
+            color: ${printCustomizations.colorTheme};
+            border-top: 1px solid #ddd;
+            padding-top: 2px;
+          }
+          .qrcode {
+            float: right;
+            margin-top: 10px;
+            width: 80px;
+            height: 80px;
+          }
+        </style>
+      </head>
+      <body>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ccc; padding-bottom: 5px;">
+          <div>
+            <div class="title-text">${printCustomizations.title}</div>
+            <div style="font-weight: bold; color: #555;">${printCustomizations.subTitle}</div>
+          </div>
+          <div style="font-size: 30px;">${printCustomizations.logoIcon}</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; background: #fafafa; border: 1px solid #eee; padding: 8px;">
+          <div>
+            <strong>رقم السند:</strong> <span style="font-family: monospace;">${activeTab.invoiceNo}</span><br/>
+            <strong>التاريخ:</strong> <span style="font-family: monospace;">${activeTab.date}</span><br/>
+            <strong>الفرع:</strong> ${branches.find(b => b.id === activeTab.branchId)?.name || 'الرئيسي'}<br/>
+          </div>
+          <div>
+            <strong>الحساب المقابل:</strong> ${activeCustomer?.name || 'نقدي'}<br/>
+            <strong>المستودع:</strong> ${activeWarehouse?.name || 'المبيعات'}<br/>
+            <strong>طريقة الدفع:</strong> ${activeTab.paymentMethod === 'cash' ? 'نقدي' : activeTab.paymentMethod === 'bank' ? 'بنكي' : 'آجل'}<br/>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 25px; text-align: center;">#</th>
+              <th>اسم الصنف السلعي والمواصفات</th>
+              <th style="text-align: center; width: 60px;">الكود</th>
+              <th style="text-align: center; width: 45px;">الوحدة</th>
+              ${printCustomizations.showQuantities ? '<th style="text-align: center; width: 45px;">الكمية</th>' : ''}
+              ${printCustomizations.showPrices ? '<th style="text-align: center; width: 60px;">السعر</th>' : ''}
+              ${printCustomizations.showPrices ? '<th style="text-align: left; width: 70px;">الإجمالي</th>' : ''}
+            </tr>
+          </thead>
+          <tbody>
+            ${tLines}
+          </tbody>
+        </table>
+
+        <div style="width: 100%; display: block; overflow: hidden; margin-top: 10px;">
+          <div class="total-box">
+            <div>
+              <span>المجموع:</span>
+              <span style="font-family: monospace;">${subtotal.toFixed(2)}</span>
+            </div>
+            <div>
+              <span>الخصم:</span>
+              <span style="font-family: monospace; color: red;">-${activeTab.discount.toFixed(2)}</span>
+            </div>
+            <div>
+              <span>الضريبة ${activeTab.taxPercent}%:</span>
+              <span style="font-family: monospace; color: red;">${taxAmount.toFixed(2)}</span>
+            </div>
+            <div class="net">
+              <span>الصافي المطلوب:</span>
+              <span style="font-family: monospace;">${netAmount.toFixed(2)} ر.س</span>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-100 text-slate-800 select-none overflow-hidden relative font-sans" dir="rtl" ref={containerRef}>
+    <div className="flex flex-col h-full bg-[#f0f0f0] text-zinc-900 overflow-hidden relative select-none font-mono text-[12px]" dir="rtl" ref={containerRef} style={{ imageRendering: 'pixelated' }}>
       
-      {/* Tab bar header exactly like Al-Meezan .NET */}
-      <div className="bg-slate-200 border-b border-slate-300 px-2 pt-1 flex items-end shrink-0 overflow-x-auto gap-1">
+      {/* 1. AUTHENTIC WINDOWS TITLE BAR */}
+      <div className="bg-gradient-to-r from-[#000080] to-[#1084d0] text-white px-2 py-1 flex items-center justify-between shrink-0 select-none cursor-default font-sans">
+        <div className="flex items-center gap-1.5 font-bold text-xs">
+          <span className="text-sm">⚖️</span>
+          <span>برنامج الميزان دوت نت - [ {getArabicTypeLabel(activeTab.invoiceType)} - {activeTab.invoiceNo} ]</span>
+          {connectedDbId && (
+            <span className="bg-emerald-600 text-white text-[9px] px-1.5 py-0.5 font-bold rounded-none flex items-center gap-0.5 font-mono">
+              <Database className="w-2.5 h-2.5" /> سحابي
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          <button 
+            onClick={toggleFullscreen}
+            className="w-[18px] h-[18px] bg-[#f0f0f0] border border-white border-b-zinc-600 border-r-zinc-600 active:border-zinc-500 hover:bg-zinc-200 text-black font-black text-[9px] flex items-center justify-center cursor-pointer"
+            title="ملء الشاشة"
+          >
+            🗖
+          </button>
+          <button 
+            onClick={onClose}
+            className="w-[18px] h-[18px] bg-[#f0f0f0] border border-white border-b-zinc-600 border-r-zinc-600 active:border-zinc-500 hover:bg-red-600 hover:text-white text-black font-black text-[9px] flex items-center justify-center cursor-pointer"
+            title="إغلاق السند"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      {/* 2. MENU BAR (Functional Windows Dropdowns) */}
+      <div className="bg-[#f0f0f0] border-b border-zinc-400 py-0.5 px-2 flex items-center gap-4 text-xs font-bold text-zinc-900 shadow-sm relative select-none font-sans">
+        
+        {/* ملف Menu */}
+        <div className="relative">
+          <button 
+            onClick={() => setOpenMenu(openMenu === 'file' ? null : 'file')}
+            className={`px-2 py-0.5 hover:bg-blue-800 hover:text-white cursor-pointer ${openMenu === 'file' ? 'bg-blue-800 text-white' : ''}`}
+          >
+            ملف (<span className="underline">F</span>)
+          </button>
+          {openMenu === 'file' && (
+            <div className="absolute right-0 mt-0.5 w-44 bg-[#f0f0f0] border-2 border-zinc-500 shadow-xl z-[999] py-0.5 text-right text-[11px] font-bold text-zinc-800">
+              <button onClick={() => { handleOpenNewTab('sale'); setOpenMenu(null); }} className="w-full text-right px-3 py-1 hover:bg-blue-800 hover:text-white flex justify-between">
+                <span>جديد مبيعات</span>
+                <span className="text-zinc-400 text-[10px]">Ctrl+N</span>
+              </button>
+              <button onClick={() => { handleOpenNewTab('purchase'); setOpenMenu(null); }} className="w-full text-right px-3 py-1 hover:bg-blue-800 hover:text-white">جديد مشتريات</button>
+              <div className="border-t border-zinc-400 my-0.5"></div>
+              <button onClick={() => { handleSaveActiveInvoice(); setOpenMenu(null); }} className="w-full text-right px-3 py-1 hover:bg-blue-800 hover:text-white flex justify-between">
+                <span>حفظ السند</span>
+                <span className="text-zinc-400 text-[10px]">Ctrl+S</span>
+              </button>
+              <button onClick={() => { setIsPreviewOpen(true); setOpenMenu(null); }} className="w-full text-right px-3 py-1 hover:bg-blue-800 hover:text-white flex justify-between">
+                <span>معاينة الطباعة</span>
+                <span className="text-zinc-400 text-[10px]">Ctrl+P</span>
+              </button>
+              <button onClick={() => { handleSilentPrint(); setOpenMenu(null); }} className="w-full text-right px-3 py-1 hover:bg-blue-800 hover:text-white flex justify-between">
+                <span>طباعة سريعة</span>
+                <span className="text-zinc-400 text-[10px]">F6</span>
+              </button>
+              <div className="border-t border-zinc-400 my-0.5"></div>
+              <button onClick={() => { handleDeleteActiveInvoice(); setOpenMenu(null); }} className="w-full text-right px-3 py-1 hover:bg-blue-800 hover:text-white text-rose-700">حذف السند الحالي</button>
+              <button onClick={onClose} className="w-full text-right px-3 py-1 hover:bg-blue-800 hover:text-white">خروج [Esc]</button>
+            </div>
+          )}
+        </div>
+
+        {/* تحرير Menu */}
+        <div className="relative">
+          <button 
+            onClick={() => setOpenMenu(openMenu === 'edit' ? null : 'edit')}
+            className={`px-2 py-0.5 hover:bg-blue-800 hover:text-white cursor-pointer ${openMenu === 'edit' ? 'bg-blue-800 text-white' : ''}`}
+          >
+            تحرير (<span className="underline">E</span>)
+          </button>
+          {openMenu === 'edit' && (
+            <div className="absolute right-0 mt-0.5 w-44 bg-[#f0f0f0] border-2 border-zinc-500 shadow-xl z-[999] py-0.5 text-right text-[11px] font-bold text-zinc-800">
+              <div className="px-3 py-1 text-zinc-400 text-[10px] text-center border-b border-zinc-300">الاختصارات تعمل داخل الجدول</div>
+              <div className="px-3 py-1 flex justify-between hover:bg-blue-800 hover:text-white cursor-pointer"><span>تراجع</span> <span className="text-zinc-400">Ctrl+Z</span></div>
+              <div className="px-3 py-1 flex justify-between hover:bg-blue-800 hover:text-white cursor-pointer"><span>إعادة</span> <span className="text-zinc-400">Ctrl+Y</span></div>
+              <div className="px-3 py-1 flex justify-between hover:bg-blue-800 hover:text-white cursor-pointer"><span>قص الخلايا</span> <span className="text-zinc-400">Ctrl+X</span></div>
+              <div className="px-3 py-1 flex justify-between hover:bg-blue-800 hover:text-white cursor-pointer"><span>نسخ النطاق</span> <span className="text-zinc-400">Ctrl+C</span></div>
+              <div className="px-3 py-1 flex justify-between hover:bg-blue-800 hover:text-white cursor-pointer"><span>لصق من Excel</span> <span className="text-zinc-400">Ctrl+V</span></div>
+              <div className="px-3 py-1 flex justify-between hover:bg-blue-800 hover:text-white cursor-pointer"><span>تحديد الكل</span> <span className="text-zinc-400">Ctrl+A</span></div>
+              <div className="border-t border-zinc-400 my-0.5"></div>
+              <button onClick={() => { updateActiveTab(() => ({ gridRows: [] })); setOpenMenu(null); }} className="w-full text-right px-3 py-1 hover:bg-blue-800 hover:text-white text-red-600">تفريغ كل السطور</button>
+            </div>
+          )}
+        </div>
+
+        {/* أدوات Menu */}
+        <div className="relative">
+          <button 
+            onClick={() => setOpenMenu(openMenu === 'tools' ? null : 'tools')}
+            className={`px-2 py-0.5 hover:bg-blue-800 hover:text-white cursor-pointer ${openMenu === 'tools' ? 'bg-blue-800 text-white' : ''}`}
+          >
+            أدوات (<span className="underline">T</span>)
+          </button>
+          {openMenu === 'tools' && (
+            <div className="absolute right-0 mt-0.5 w-44 bg-[#f0f0f0] border-2 border-zinc-500 shadow-xl z-[999] py-0.5 text-right text-[11px] font-bold text-zinc-800">
+              <button onClick={() => { setIsOptionsOpen(true); setOpenMenu(null); }} className="w-full text-right px-3 py-1 hover:bg-blue-800 hover:text-white">خيارات السند والخطوط</button>
+              <button onClick={() => { setIsAuditLogsOpen(true); setOpenMenu(null); }} className="w-full text-right px-3 py-1 hover:bg-blue-800 hover:text-white">سجل العمليات والتدقيق</button>
+              <button onClick={() => { showToast('تم تصدير نسخة احتياطية محلية بصيغة JSON', 'success'); setOpenMenu(null); }} className="w-full text-right px-3 py-1 hover:bg-blue-800 hover:text-white">حفظ نسخة احتياطية</button>
+            </div>
+          )}
+        </div>
+
+        {/* مساعدة Menu */}
+        <div className="relative">
+          <button 
+            onClick={() => setOpenMenu(openMenu === 'help' ? null : 'help')}
+            className={`px-2 py-0.5 hover:bg-blue-800 hover:text-white cursor-pointer ${openMenu === 'help' ? 'bg-blue-800 text-white' : ''}`}
+          >
+            مساعدة (<span className="underline">H</span>)
+          </button>
+          {openMenu === 'help' && (
+            <div className="absolute right-0 mt-0.5 w-48 bg-[#f0f0f0] border-2 border-zinc-500 shadow-xl z-[999] py-0.5 text-right text-[11px] font-bold text-zinc-800">
+              <button onClick={() => { setIsAboutOpen(true); setOpenMenu(null); }} className="w-full text-right px-3 py-1 hover:bg-blue-800 hover:text-white">حول برنامج الميزان .NET</button>
+              <a href="https://google.com" target="_blank" rel="noreferrer" className="w-full text-right px-3 py-1 hover:bg-blue-800 hover:text-white block">طلب الدعم الفني المباشر</a>
+            </div>
+          )}
+        </div>
+
+        {/* Global Clocker */}
+        <div className="mr-auto font-mono text-[10px] text-zinc-500 font-bold">
+          {new Date().toLocaleDateString('ar-SA')} - {new Date().toLocaleTimeString('ar-SA')}
+        </div>
+      </div>
+
+      {/* 3. WINDOWS RETRO TOOLBAR (Compact, raised grey buttons, flat style) */}
+      <div className="bg-[#f0f0f0] border-b border-zinc-400 p-1 flex items-center justify-between shrink-0 select-none font-sans">
+        <div className="flex items-center gap-0.5">
+          <button 
+            onClick={() => handleOpenNewTab()} 
+            className="h-10 px-2 bg-[#f0f0f0] border border-transparent hover:border-white hover:border-b-zinc-600 hover:border-r-zinc-600 active:bg-zinc-300 text-zinc-800 flex flex-col items-center justify-center cursor-pointer"
+            title="سند جديد [F2]"
+          >
+            <Plus className="w-4 h-4 text-emerald-700" />
+            <span className="text-[10px] font-bold">جديد [F2]</span>
+          </button>
+
+          <button 
+            onClick={handleSaveActiveInvoice} 
+            className="h-10 px-2 bg-[#f0f0f0] border border-transparent hover:border-white hover:border-b-zinc-600 hover:border-r-zinc-600 active:bg-zinc-300 text-zinc-800 flex flex-col items-center justify-center cursor-pointer"
+            title="حفظ السند [F5]"
+          >
+            <Check className="w-4 h-4 text-blue-700" />
+            <span className="text-[10px] font-bold">حفظ [F5]</span>
+          </button>
+
+          <button 
+            onClick={handleDeleteActiveInvoice} 
+            className="h-10 px-2 bg-[#f0f0f0] border border-transparent hover:border-white hover:border-b-zinc-600 hover:border-r-zinc-600 active:bg-zinc-300 text-zinc-800 flex flex-col items-center justify-center cursor-pointer"
+            title="حذف السند [F9]"
+          >
+            <Trash2 className="w-4 h-4 text-red-700" />
+            <span className="text-[10px] font-bold">حذف [F9]</span>
+          </button>
+
+          <div className="w-[1px] h-8 bg-zinc-400 mx-1"></div>
+
+          <button 
+            onClick={() => setIsPreviewOpen(true)} 
+            className="h-10 px-2 bg-[#f0f0f0] border border-transparent hover:border-white hover:border-b-zinc-600 hover:border-r-zinc-600 active:bg-zinc-300 text-zinc-800 flex flex-col items-center justify-center cursor-pointer"
+            title="معاينة الطباعة [F8]"
+          >
+            <Eye className="w-4 h-4 text-blue-800" />
+            <span className="text-[10px] font-bold">معاينة [F8]</span>
+          </button>
+
+          <button 
+            onClick={handleSilentPrint} 
+            className="h-10 px-2 bg-[#f0f0f0] border border-transparent hover:border-white hover:border-b-zinc-600 hover:border-r-zinc-600 active:bg-zinc-300 text-zinc-800 flex flex-col items-center justify-center cursor-pointer"
+            title="طباعة مباشرة [F6]"
+          >
+            <Printer className="w-4 h-4 text-zinc-700" />
+            <span className="text-[10px] font-bold">طباعة [F6]</span>
+          </button>
+
+          <div className="w-[1px] h-8 bg-zinc-400 mx-1"></div>
+
+          <button 
+            onClick={() => setIsSearchOpen(!isSearchOpen)} 
+            className={`h-10 px-2 bg-[#f0f0f0] border border-transparent hover:border-white hover:border-b-zinc-600 hover:border-r-zinc-600 active:bg-zinc-300 text-zinc-800 flex flex-col items-center justify-center cursor-pointer ${isSearchOpen ? 'bg-zinc-300 border-zinc-500' : ''}`}
+            title="بحث عن سند"
+          >
+            <Search className="w-4 h-4 text-indigo-700" />
+            <span className="text-[10px] font-bold">بحث سخر</span>
+          </button>
+
+          <button 
+            onClick={() => setIsAuditLogsOpen(true)} 
+            className="h-10 px-2 bg-[#f0f0f0] border border-transparent hover:border-white hover:border-b-zinc-600 hover:border-r-zinc-600 active:bg-zinc-300 text-zinc-800 flex flex-col items-center justify-center cursor-pointer"
+            title="سجل التدقيق والعمليات للمستند"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-amber-700" />
+            <span className="text-[10px] font-bold">سجل العمليات</span>
+          </button>
+        </div>
+
+        {/* Fast Barcode reader inside Toolbar */}
+        <div className="flex items-center gap-1.5 ml-2">
+          <span className="text-[10px] font-bold text-zinc-600">قارئ باركود:</span>
+          <form onSubmit={handleBarcodeSubmit} className="flex items-center bg-white border border-zinc-400 px-1 py-0.5 shadow-inner">
+            <Barcode className="w-3.5 h-3.5 text-zinc-500 mr-0.5 ml-1" />
+            <input
+              type="text"
+              placeholder="مرر الباركود السلعي..."
+              value={barcodeInput}
+              onChange={e => setBarcodeInput(e.target.value)}
+              className="bg-transparent text-[11px] text-zinc-900 focus:outline-none w-32 font-mono font-bold"
+            />
+          </form>
+        </div>
+      </div>
+
+      {/* 4. ACTIVE WINDOW TABS (Traditional MDI documents switch) */}
+      <div className="bg-[#e0e0e0] border-b border-zinc-400 px-1.5 pt-1.5 flex items-end shrink-0 gap-0.5 overflow-x-auto font-sans">
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
           return (
             <div
               key={tab.id}
               onClick={() => handleSwitchTab(tab.id)}
-              className={`px-3 py-1.5 rounded-t-lg text-xs font-black flex items-center gap-2 cursor-pointer transition-all border-t-2 ${
+              className={`px-3 py-1 text-[11px] font-bold flex items-center gap-1.5 cursor-pointer border-t border-l border-r ${
                 isActive 
-                  ? 'bg-white text-blue-700 border-blue-600 shadow-sm z-10 font-black' 
-                  : 'bg-slate-50 text-slate-500 border-transparent hover:bg-slate-100'
+                  ? 'bg-[#f0f0f0] text-blue-900 border-zinc-400 border-b-[#f0f0f0] z-10 font-black relative top-[1px] shadow-[0_-2px_2px_rgba(0,0,0,0.05)]' 
+                  : 'bg-[#d8d8d8] text-zinc-600 border-transparent hover:bg-[#e4e4e4]'
               }`}
             >
-              <FileText className={`w-3.5 h-3.5 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
-              <span className="truncate max-w-[120px]">{tab.title}</span>
+              <span className="text-xs">📂</span>
+              <span className="truncate max-w-[130px]">{tab.title}</span>
               <button
                 onClick={(e) => handleCloseTab(tab.id, e)}
-                className="p-0.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700"
+                className="p-0.5 text-zinc-400 hover:text-red-700 font-bold hover:bg-zinc-200"
               >
-                <X className="w-3 h-3" />
+                ✕
               </button>
             </div>
           );
         })}
-        
-        {/* Quick add tab triggers */}
         <button
-          onClick={() => handleOpenNewTab('sale')}
-          className="p-1.5 mb-1 bg-white border border-slate-300 hover:bg-slate-50 rounded-full cursor-pointer text-slate-600 flex items-center justify-center"
-          title="فتح تبويب فاتورة مبيعات جديدة"
+          onClick={() => handleOpenNewTab()}
+          className="px-2 py-0.5 mb-0.5 bg-[#f0f0f0] border border-zinc-400 text-zinc-700 hover:bg-zinc-200 text-[10px] font-bold"
+          title="مستند مبيعات جديد"
         >
-          <Plus className="w-3.5 h-3.5" />
+          + تبويب جديد
         </button>
       </div>
 
-      {/* Top action controls toolbar */}
-      <div className="bg-white border-b border-slate-300 p-2 flex items-center justify-between shadow-xs shrink-0 gap-2">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-blue-100 text-blue-700 rounded-lg shrink-0">
-            <FileText className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-xs font-black text-slate-900 flex items-center gap-1.5">
-              {getArabicTypeLabel(activeTab.invoiceType)}
-              <span className="text-[9px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold uppercase font-mono">
-                {activeTab.invoiceType}
-              </span>
-            </h1>
-            <p className="text-[9px] text-slate-400 font-bold">الميزان المحاسبي دوت نت - تجربة ممتدة بالكامل لسطح المكتب</p>
-          </div>
-        </div>
-
-        {/* Barcode forms and fullscreen widgets */}
-        <div className="flex items-center gap-3">
-          <form onSubmit={handleBarcodeSubmit} className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1">
-            <Barcode className="w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="مرر باركود الصنف هنا..."
-              value={barcodeInput}
-              onChange={e => setBarcodeInput(e.target.value)}
-              className="bg-transparent text-xs text-slate-800 focus:outline-none w-48 font-mono font-bold"
-            />
-          </form>
-
-          {/* Core controls buttons */}
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={handleSaveActiveInvoice}
-              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black shadow-sm cursor-pointer flex items-center gap-1"
-              title="Ctrl + S حفظ الفاتورة"
-            >
-              <CheckSquare className="w-3.5 h-3.5" /> حفظ (Ctrl+S)
-            </button>
-            <button
-              onClick={() => setIsPreviewOpen(true)}
-              className="px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 rounded-lg text-xs font-black shadow-xs cursor-pointer flex items-center gap-1"
-              title="Ctrl + P طباعة ومعاينة"
-            >
-              <Printer className="w-3.5 h-3.5" /> المعاينة والطباعة (Ctrl+P)
-            </button>
-            <button
-              onClick={toggleFullscreen}
-              className="p-1.5 bg-slate-50 border border-slate-300 text-slate-500 rounded-lg hover:bg-slate-100 cursor-pointer"
-              title="تفعيل ملء الشاشة الحقيقي بدون هوامش F11"
-            >
-              {isFullscreen ? <Shrink className="w-4 h-4 text-rose-500" /> : <Expand className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Form Working Area containing split layouts */}
-      <div className="flex-1 flex flex-row min-h-0 relative">
+      {/* 5. MAIN INTEGRATED WORKSPACE (HIGH-DENSITY WINDOWS ERP LAYOUT) */}
+      <div className="flex-1 flex flex-row min-h-0 relative bg-[#f0f0f0]" onClick={() => setOpenMenu(null)}>
         
-        {/* Left container: hold Header input parameters + resizable Excel grid */}
-        <div className="flex-1 flex flex-col min-h-0 p-2.5 space-y-2.5 overflow-y-auto">
+        {/* Workspace body: inputs & grid */}
+        <div className="flex-1 flex flex-col min-h-0 p-1 space-y-1 overflow-y-auto">
           
-          {/* Header parameters form card */}
-          <div className="grid grid-cols-12 gap-2 bg-white border border-slate-300 p-2.5 rounded-lg shadow-xs shrink-0">
+          {/* Dense inputs section Organized in Bevelled field panels */}
+          <div className="grid grid-cols-12 gap-1 bg-[#f0f0f0] p-1 border border-zinc-300 shadow-sm shrink-0">
             
-            <div className="col-span-3">
-              <label className="block text-[10px] font-black text-slate-500 mb-0.5">رقم السند المالي</label>
-              <input
-                type="text"
-                value={activeTab.invoiceNo}
-                onChange={e => updateActiveTab(() => ({ invoiceNo: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-300 rounded p-1 text-xs font-mono font-black text-slate-950 focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
+            {/* General Doc Panel */}
+            <fieldset className="col-span-4 border border-zinc-400 p-1.5 relative text-right">
+              <legend className="px-1 text-[10px] font-black text-blue-900 bg-[#f0f0f0] border border-zinc-400">بيانات السند العامة</legend>
+              <div className="grid grid-cols-2 gap-1.5">
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">رقم السند المالي:</label>
+                  <input
+                    type="text"
+                    value={activeTab.invoiceNo}
+                    onChange={e => updateActiveTab(() => ({ invoiceNo: e.target.value }))}
+                    className="w-full bg-white border border-zinc-400 px-1 py-0.5 text-[11px] font-mono font-bold text-zinc-900 shadow-inner rounded-none focus:outline-none focus:border-zinc-700"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">تاريخ المعاملة:</label>
+                  <input
+                    type="date"
+                    value={activeTab.date}
+                    onChange={e => updateActiveTab(() => ({ date: e.target.value }))}
+                    className="w-full bg-white border border-zinc-400 px-1 py-0.5 text-[11px] font-mono font-bold text-zinc-900 shadow-inner rounded-none focus:outline-none focus:border-zinc-700"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">الفرع المالي:</label>
+                  <select
+                    value={activeTab.branchId}
+                    onChange={e => updateActiveTab(() => ({ branchId: e.target.value }))}
+                    className="w-full bg-white border border-zinc-400 p-0.5 text-[11px] font-bold text-zinc-900 rounded-none focus:outline-none"
+                  >
+                    {branches.map(br => <option key={br.id} value={br.id}>{br.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">طريقة السداد:</label>
+                  <select
+                    value={activeTab.paymentMethod}
+                    onChange={e => updateActiveTab(() => ({ paymentMethod: e.target.value as any }))}
+                    className="w-full bg-white border border-zinc-400 p-0.5 text-[11px] font-bold text-zinc-900 rounded-none focus:outline-none"
+                  >
+                    <option value="cash">نقدي (صندوق الفروع)</option>
+                    <option value="credit">ذمم وآجل (كشف الحساب)</option>
+                    <option value="bank">شبكة وبنك (تحويل مباشر)</option>
+                  </select>
+                </div>
+              </div>
+            </fieldset>
 
-            <div className="col-span-3">
-              <label className="block text-[10px] font-black text-slate-500 mb-0.5">تاريخ المعاملة</label>
-              <input
-                type="date"
-                value={activeTab.date}
-                onChange={e => updateActiveTab(() => ({ date: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-300 rounded p-1 text-xs font-mono text-slate-900"
-              />
-            </div>
+            {/* Parties & Delivery Panel */}
+            <fieldset className="col-span-4 border border-zinc-400 p-1.5 relative text-right">
+              <legend className="px-1 text-[10px] font-black text-blue-900 bg-[#f0f0f0] border border-zinc-400">الطرف المقابل والمستودعات</legend>
+              <div className="grid grid-cols-2 gap-1.5">
+                <div className="col-span-2">
+                  <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">الحساب المقابل (العميل/المورد):</label>
+                  <select
+                    value={activeTab.customerId}
+                    onChange={e => updateActiveTab(() => ({ customerId: e.target.value }))}
+                    className="w-full bg-white border border-zinc-400 p-0.5 text-[11px] font-bold text-zinc-900 rounded-none focus:outline-none"
+                  >
+                    {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">مستودع الصرف/السحب:</label>
+                  <select
+                    value={activeTab.warehouseId}
+                    onChange={e => updateActiveTab(() => ({ warehouseId: e.target.value }))}
+                    className="w-full bg-white border border-zinc-400 p-0.5 text-[11px] font-bold text-zinc-900 rounded-none focus:outline-none"
+                  >
+                    {warehouses.map(wh => <option key={wh.id} value={wh.id}>{wh.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">مندوب المبيعات:</label>
+                  <select
+                    value={activeTab.salesRepId}
+                    onChange={e => updateActiveTab(() => ({ salesRepId: e.target.value }))}
+                    className="w-full bg-white border border-zinc-400 p-0.5 text-[11px] font-bold text-zinc-900 rounded-none focus:outline-none"
+                  >
+                    <option value="rep-1">صالح المحمد (المبيعات)</option>
+                    <option value="rep-2">خالد العتيبي (مبيعات خارجية)</option>
+                    <option value="rep-3">سارة القحطاني (تسويق هاتف)</option>
+                  </select>
+                </div>
+              </div>
+            </fieldset>
 
-            <div className="col-span-3">
-              <label className="block text-[10px] font-black text-slate-500 mb-0.5">الفرع المالي</label>
-              <select
-                value={activeTab.branchId}
-                onChange={e => updateActiveTab(() => ({ branchId: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-300 rounded p-1 text-xs text-slate-800"
-              >
-                {branches.map(br => <option key={br.id} value={br.id}>{br.name}</option>)}
-              </select>
-            </div>
+            {/* Currencies & Accounting Accounts Panel */}
+            <fieldset className="col-span-4 border border-zinc-400 p-1.5 relative text-right">
+              <legend className="px-1 text-[10px] font-black text-blue-900 bg-[#f0f0f0] border border-zinc-400">التوجيه المالي ومراكز التكلفة</legend>
+              <div className="grid grid-cols-2 gap-1.5">
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">العملة والعمل المالي:</label>
+                  <select
+                    value={activeTab.currencyId}
+                    onChange={e => updateActiveTab(() => ({ currencyId: e.target.value }))}
+                    className="w-full bg-white border border-zinc-400 p-0.5 text-[11px] font-bold text-zinc-900 rounded-none focus:outline-none"
+                  >
+                    {currencies.map(c => <option key={c.id} value={c.id}>{c.name} ({c.symbol})</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">الحساب المدين المقترح:</label>
+                  <select
+                    value={activeTab.cashAccountId}
+                    onChange={e => updateActiveTab(() => ({ cashAccountId: e.target.value }))}
+                    className="w-full bg-white border border-zinc-400 p-0.5 text-[10px] font-bold text-zinc-800 rounded-none focus:outline-none"
+                  >
+                    <option value="acc-111001">الصندوق الرئيسي 111001</option>
+                    <option value="acc-111002">صندوق مشتريات 111002</option>
+                    <option value="acc-121001">ذمم العملاء المدينة 121001</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">مركز تكلفة (أ):</label>
+                  <select
+                    value={activeTab.debitCostCenterId}
+                    onChange={e => updateActiveTab(() => ({ debitCostCenterId: e.target.value }))}
+                    className="w-full bg-white border border-zinc-400 p-0.5 text-[11px] font-bold text-zinc-900 rounded-none focus:outline-none"
+                  >
+                    {costCenters.map(cc => <option key={cc.id} value={cc.id}>{cc.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">مركز تكلفة (ب):</label>
+                  <select
+                    value={activeTab.creditCostCenterId}
+                    onChange={e => updateActiveTab(() => ({ creditCostCenterId: e.target.value }))}
+                    className="w-full bg-white border border-zinc-400 p-0.5 text-[11px] font-bold text-zinc-900 rounded-none focus:outline-none"
+                  >
+                    {costCenters.map(cc => <option key={cc.id} value={cc.id}>{cc.name}</option>)}
+                  </select>
+                </div>
+              </div>
+            </fieldset>
 
-            <div className="col-span-3">
-              <label className="block text-[10px] font-black text-slate-500 mb-0.5">الحساب المقابل (العميل/المورد)</label>
-              <select
-                value={activeTab.customerId}
-                onChange={e => updateActiveTab(() => ({ customerId: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-300 rounded p-1 text-xs text-slate-800 font-bold"
-              >
-                {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
-
-            <div className="col-span-3">
-              <label className="block text-[10px] font-black text-slate-500 mb-0.5">مستودع السحب</label>
-              <select
-                value={activeTab.warehouseId}
-                onChange={e => updateActiveTab(() => ({ warehouseId: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-300 rounded p-1 text-xs text-slate-800 font-bold"
-              >
-                {warehouses.map(wh => <option key={wh.id} value={wh.id}>{wh.name}</option>)}
-              </select>
-            </div>
-
-            <div className="col-span-3">
-              <label className="block text-[10px] font-black text-slate-500 mb-0.5">العملة المحاسبية</label>
-              <select
-                value={activeTab.currencyId}
-                onChange={e => updateActiveTab(() => ({ currencyId: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-300 rounded p-1 text-xs text-slate-800"
-              >
-                {currencies.map(c => <option key={c.id} value={c.id}>{c.name} ({c.symbol})</option>)}
-              </select>
-            </div>
-
-            <div className="col-span-3">
-              <label className="block text-[10px] font-black text-slate-500 mb-0.5">طريقة السداد</label>
-              <select
-                value={activeTab.paymentMethod}
-                onChange={e => updateActiveTab(() => ({ paymentMethod: e.target.value as any }))}
-                className="w-full bg-slate-50 border border-slate-300 rounded p-1 text-xs text-slate-800 font-bold"
-              >
-                <option value="cash">نقدي (الصندوق العام للفروع)</option>
-                <option value="credit">ذمم وآجل (على كشف الحساب)</option>
-                <option value="bank">شبكة وبنك (تحويل الحسابات)</option>
-              </select>
-            </div>
-
-            <div className="col-span-3">
-              <label className="block text-[10px] font-black text-slate-500 mb-0.5">البيان والشرح العام للفاتورة</label>
+            {/* Description/Explanation across full layout */}
+            <div className="col-span-12 flex items-center gap-1.5 mt-1 border-t border-zinc-300 pt-1">
+              <span className="text-[10px] font-bold text-zinc-600 shrink-0">البيان / الشرح:</span>
               <input
                 type="text"
                 value={activeTab.description}
-                placeholder="اكتب شرحاً موجزاً لحفظه في القيد المالي التلقائي..."
+                placeholder="اكتب بياناً محاسبياً مفصلاً يرحل تلقائياً كشرح في القيود اليومية..."
                 onChange={e => updateActiveTab(() => ({ description: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-300 rounded p-1 text-xs text-slate-800 font-bold"
+                className="flex-1 bg-white border border-zinc-400 px-1.5 py-0.5 text-[11px] font-bold text-zinc-900 shadow-inner rounded-none focus:outline-none"
+              />
+              <span className="text-[10px] font-bold text-zinc-600 shrink-0">مرجع الفاتورة:</span>
+              <input
+                type="text"
+                value={activeTab.originalInvoiceRef}
+                placeholder="رقم المستند المرجعي"
+                onChange={e => updateActiveTab(() => ({ originalInvoiceRef: e.target.value }))}
+                className="w-40 bg-white border border-zinc-400 px-1.5 py-0.5 text-[11px] font-bold text-zinc-900 shadow-inner rounded-none focus:outline-none"
               />
             </div>
 
           </div>
 
-          {/* Grid table resizable divider layout section */}
+          {/* Core DataGrid Element - occupies most space */}
           <div 
             style={{ height: gridHeight }} 
-            className="flex flex-col min-h-[150px] relative border border-slate-300 rounded-lg shadow-sm overflow-hidden"
+            className="flex flex-col min-h-[120px] relative border-2 border-zinc-400 overflow-hidden shrink-0"
           >
             <ExcelGrid
               rows={activeTab.gridRows}
               onChange={(updated) => updateActiveTab(() => ({ gridRows: updated }))}
+              onActiveCellChange={(address) => setGridActiveCellAddress(address)}
               onAddRow={() => {
                 const newRowId = `grid-row-${Date.now()}`;
                 const matched = items[0];
@@ -1203,7 +1323,7 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
               }}
               onDeleteRow={(id) => {
                 if (activeTab.gridRows.length <= 1) {
-                  showToast('يجب أن تحتوي الفاتورة على بند صنف واحد على الأقل.', 'warning');
+                  showToast('يجب أن تحتوي الفاتورة على سطر واحد على الأقل.', 'warning');
                   return;
                 }
                 const filtered = activeTab.gridRows.filter(r => r.id !== id);
@@ -1212,64 +1332,83 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
               invoiceType={activeTab.invoiceType}
             />
 
-            {/* Horizontal separator resizing handle bar underneath grid */}
+            {/* Resize Handle below Grid */}
             <div
               onMouseDown={handleHorizontalSeparatorMouseDown}
-              className="absolute bottom-0 left-0 right-0 h-1.5 cursor-row-resize bg-slate-200 hover:bg-blue-500/50 z-40 transition-colors"
-              title="اسحب لتكبير وتصغير مساحة الجدول"
+              className="absolute bottom-0 left-0 right-0 h-1.5 cursor-row-resize bg-zinc-300 hover:bg-blue-600 z-40 transition-colors"
+              title="اسحب لتعديل ارتفاع شبكة المدخلات"
             />
           </div>
 
-          {/* Summary calculations area */}
-          <div className="grid grid-cols-12 gap-3 shrink-0">
-            <div className="col-span-8 bg-white border border-slate-300 p-2.5 rounded-lg flex flex-col justify-between text-xs font-bold text-slate-500">
-              <div className="flex gap-4">
-                <div>
-                  <label className="block text-[10px] text-slate-400 mb-0.5">ملاحظات المستند</label>
+          {/* Bottom summaries section: calculations & discounts */}
+          <div className="grid grid-cols-12 gap-1.5 shrink-0">
+            <div className="col-span-8 border border-zinc-400 p-1 bg-[#f5f5f5]">
+              <div className="flex gap-2">
+                <div className="w-1/2">
+                  <label className="block text-[10px] text-zinc-600 mb-0.5">ملاحظات و تذييل السند:</label>
                   <textarea
                     rows={2}
                     value={activeTab.notes}
                     onChange={e => updateActiveTab(() => ({ notes: e.target.value }))}
-                    className="w-80 bg-slate-50 border border-slate-300 rounded p-1 text-[11px] text-slate-700"
-                    placeholder="ملاحظات وشروط إضافية تظهر أسفل الفاتورة المطوع بها..."
+                    className="w-full bg-white border border-zinc-400 p-1 text-[11px] font-bold text-zinc-900 shadow-inner focus:outline-none"
+                    placeholder="ملاحظات تظهر أسفل الفاتورة المطبوعة..."
                   />
                 </div>
-                <div className="flex-1 grid grid-cols-2 gap-2">
+                <div className="w-1/2 grid grid-cols-2 gap-1.5">
                   <div>
-                    <label className="block text-[10px] text-slate-400 mb-0.5">الخصم المالي</label>
+                    <label className="block text-[10px] text-zinc-600 mb-0.5">الخصم الإجمالي ر.س:</label>
                     <input
                       type="number"
                       value={activeTab.discount}
                       onChange={e => updateActiveTab(() => ({ discount: Number(e.target.value) }))}
-                      className="w-full bg-slate-50 border rounded p-1 font-mono text-[11px]"
+                      className="w-full bg-white border border-zinc-400 px-1 py-0.5 font-mono text-[11px] font-bold text-zinc-900 shadow-inner rounded-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-slate-400 mb-0.5">الإضافة والتحميل</label>
+                    <label className="block text-[10px] text-zinc-600 mb-0.5">الإضافات / الرسوم ر.س:</label>
                     <input
                       type="number"
                       value={activeTab.addition}
                       onChange={e => updateActiveTab(() => ({ addition: Number(e.target.value) }))}
-                      className="w-full bg-slate-50 border rounded p-1 font-mono text-[11px]"
+                      className="w-full bg-white border border-zinc-400 px-1 py-0.5 font-mono text-[11px] font-bold text-zinc-900 shadow-inner rounded-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-zinc-600 mb-0.5">نسبة الضريبة %:</label>
+                    <input
+                      type="number"
+                      value={activeTab.taxPercent}
+                      onChange={e => updateActiveTab(() => ({ taxPercent: Number(e.target.value) }))}
+                      className="w-full bg-white border border-zinc-400 px-1 py-0.5 font-mono text-[11px] font-bold text-zinc-900 shadow-inner rounded-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-zinc-600 mb-0.5">المبلغ المدفوع ر.س:</label>
+                    <input
+                      type="number"
+                      value={activeTab.paidAmount}
+                      onChange={e => updateActiveTab(() => ({ paidAmount: Number(e.target.value) }))}
+                      className="w-full bg-white border border-zinc-400 px-1 py-0.5 font-mono text-[11px] font-bold text-zinc-900 shadow-inner rounded-none"
                     />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="col-span-4 bg-slate-800 text-slate-200 p-3 rounded-lg flex flex-col justify-between shadow-sm">
-              <div className="space-y-1.5 text-[11px] font-bold">
+            {/* Calculations summaries */}
+            <div className="col-span-4 bg-zinc-800 text-white p-2 border-2 border-zinc-950 flex flex-col justify-between">
+              <div className="space-y-1 text-[11px] font-bold text-right">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">الإجمالي المبدئي للسلع:</span>
-                  <span className="font-mono text-white text-xs">{subtotal.toLocaleString()} ر.س</span>
+                  <span className="text-zinc-400">الإجمالي المبدئي للسلع:</span>
+                  <span className="font-mono">{subtotal.toFixed(2)} ر.س</span>
                 </div>
-                <div className="flex justify-between text-red-400">
-                  <span>الضريبة المضافة {activeTab.taxPercent}%:</span>
-                  <span className="font-mono text-xs">+{taxAmount.toLocaleString()} ر.س</span>
+                <div className="flex justify-between text-rose-400">
+                  <span>ضريبة القيمة المضافة:</span>
+                  <span className="font-mono">+{taxAmount.toFixed(2)} ر.س</span>
                 </div>
-                <div className="border-t border-slate-700 pt-1.5 flex justify-between text-emerald-400 text-xs font-black">
-                  <span>الصافي النهائي للطلب:</span>
-                  <span className="font-mono text-white text-sm">{netAmount.toLocaleString()} ر.س</span>
+                <div className="border-t border-zinc-700 pt-1 flex justify-between text-emerald-400 text-[12px] font-black">
+                  <span>الصافي النهائي للمستند:</span>
+                  <span className="font-mono text-white text-[13px]">{netAmount.toFixed(2)} ر.س</span>
                 </div>
               </div>
             </div>
@@ -1277,271 +1416,231 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
 
         </div>
 
-        {/* Resizable Vertical Separator bar */}
+        {/* Vertical Resizable bar */}
         <div
           onMouseDown={handleVerticalSeparatorMouseDown}
-          className="w-1.5 bg-slate-200 hover:bg-blue-500 cursor-col-resize shrink-0 z-40 transition-colors"
-          title="اسحب لتغيير عرض لوحة البيانات الجانبية"
+          className="w-1 bg-zinc-300 hover:bg-blue-600 cursor-col-resize shrink-0 z-40 transition-colors"
+          title="اسحب لتعديل عرض بطاقة المادة"
         />
 
-        {/* Right Sidebar: Active Item Stock Card details */}
+        {/* Right Sidebar: Windows ERP Stock Card */}
         <div 
           style={{ width: sidebarWidth }} 
-          className="bg-slate-900 text-slate-200 p-3 flex flex-col justify-between shrink-0 overflow-y-auto min-w-[150px] shadow-lg"
+          className="bg-[#f0f0f0] border-r border-zinc-400 p-1.5 flex flex-col justify-between shrink-0 overflow-y-auto min-w-[120px] select-none text-right font-sans"
         >
           {currentItemInTab ? (
-            <div className="space-y-3 font-sans">
-              <div className="border-b border-slate-700 pb-2">
-                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">بطاقة المادة النشطة بالمخازن</span>
-                <h4 className="text-xs font-black text-white truncate mt-0.5" title={currentItemInTab.name}>
+            <div className="space-y-2 border border-zinc-400 p-2 bg-white">
+              <div className="border-b border-zinc-300 pb-1">
+                <span className="text-[9px] font-black text-blue-900 tracking-wider">بطاقة المادة النشطة</span>
+                <h4 className="text-[11px] font-bold text-zinc-800 truncate mt-0.5" title={currentItemInTab.name}>
                   {currentItemInTab.name}
                 </h4>
               </div>
 
-              <div className="space-y-2 text-[11px] text-slate-300 font-bold">
+              <div className="space-y-1 text-[10px] text-zinc-700 font-bold leading-relaxed">
                 <div className="flex justify-between font-mono">
                   <span>رمز المادة:</span>
-                  <span className="font-black text-white">{currentItemInTab.code}</span>
+                  <span className="text-zinc-900">{currentItemInTab.code}</span>
                 </div>
                 <div className="flex justify-between font-mono">
-                  <span>الباركود الدولي:</span>
-                  <span className="font-black text-white">{currentItemInTab.barcode || 'غير متوفر'}</span>
+                  <span>الباركود:</span>
+                  <span className="text-zinc-900">{currentItemInTab.barcode || '---'}</span>
                 </div>
-                <div className="flex justify-between font-mono border-t border-slate-800 pt-2 mt-2">
-                  <span>الرصيد الفعلي للمستودع:</span>
-                  <span className={`font-black ${currentItemInTab.currentStock < 5 ? 'text-rose-400' : 'text-green-400'}`}>
+                <div className="flex justify-between font-mono border-t border-zinc-200 pt-1.5 mt-1.5">
+                  <span>الرصيد بالمخزن:</span>
+                  <span className={`font-black ${currentItemInTab.currentStock < 5 ? 'text-red-600' : 'text-emerald-700'}`}>
                     {currentItemInTab.currentStock} {currentItemInTab.unit || 'حبة'}
                   </span>
                 </div>
                 <div className="flex justify-between font-mono">
-                  <span>سعر الشراء المالي:</span>
-                  <span className="text-white">{currentItemInTab.purchasePrice?.toLocaleString()} ر.س</span>
+                  <span>آخر سعر شراء:</span>
+                  <span>{currentItemInTab.purchasePrice?.toFixed(2)} ر.س</span>
                 </div>
                 <div className="flex justify-between font-mono">
                   <span>سعر البيع المعتمد:</span>
-                  <span className="text-emerald-400 font-black">{currentItemInTab.salePrice?.toLocaleString()} ر.س</span>
+                  <span className="text-blue-800 font-black">{currentItemInTab.salePrice?.toFixed(2)} ر.س</span>
                 </div>
-              </div>
-
-              {/* Helpful tips */}
-              <div className="bg-slate-800/60 p-2 rounded border border-slate-800 text-[10px] text-slate-400 leading-relaxed font-bold">
-                <Info className="w-3.5 h-3.5 text-blue-400 inline ml-1 align-text-bottom" />
-                يمكنك التعديل مباشرة على الخلايا أو الضغط على زر <span className="text-white">Enter</span> للبدء في الكتابة السريعة.
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 text-slate-500 flex flex-col gap-2 items-center justify-center h-full">
-              <HelpCircle className="w-10 h-10 text-slate-700" />
-              <span className="text-[10px] font-black">حدد أحد خلايا سطر الصنف النشط لعرض بطاقته المخزنية هنا</span>
+            <div className="text-center py-10 text-zinc-500 flex flex-col gap-1 items-center justify-center border border-zinc-400 p-2 bg-white h-full">
+              <HelpCircle className="w-8 h-8 text-zinc-300" />
+              <span className="text-[9px] font-bold">حدد خلية سطر صنف لعرض بطاقته هنا</span>
             </div>
           )}
 
-          {/* Quick tab helpers */}
-          <div className="border-t border-slate-800 pt-2.5 mt-4 space-y-1">
+          {/* Quick Tab additions */}
+          <div className="border-t border-zinc-300 pt-2.5 mt-2 space-y-1">
             <button
               onClick={() => handleOpenNewTab('sale')}
-              className="w-full text-right py-1 px-2 hover:bg-slate-800 text-[10px] font-black rounded text-blue-400 flex items-center gap-1.5"
+              className="w-full text-right py-1 px-1.5 bg-white hover:bg-zinc-200 border border-zinc-400 text-[10px] font-bold text-blue-900 flex items-center gap-1 cursor-pointer"
             >
-              <Plus className="w-3 h-3" /> فتح فاتورة مبيعات في تبويب مستقل
+              <span>📂 فتح مبيعات بتبويب مستقل</span>
             </button>
             <button
               onClick={() => handleOpenNewTab('purchase')}
-              className="w-full text-right py-1 px-2 hover:bg-slate-800 text-[10px] font-black rounded text-amber-400 flex items-center gap-1.5"
+              className="w-full text-right py-1 px-1.5 bg-white hover:bg-zinc-200 border border-zinc-400 text-[10px] font-bold text-amber-900 flex items-center gap-1 cursor-pointer"
             >
-              <Plus className="w-3 h-3" /> فتح فاتورة مشتريات في تبويب مستقل
+              <span>📂 فتح مشتريات بتبويب مستقل</span>
             </button>
           </div>
         </div>
 
       </div>
 
-      {/* PRINT PREVIEW MODAL with custom models & visual designer */}
+      {/* 6. WINDOWS RETRO STATUS BAR */}
+      <div className="bg-[#e0e0e0] border-t border-zinc-400 h-6 shrink-0 flex items-center justify-between text-[11px] font-bold text-zinc-700 px-1 select-none font-sans">
+        <div className="flex items-center gap-2 flex-1">
+          <div className="px-2 border-l border-zinc-400 flex items-center gap-1 text-emerald-800 font-bold shrink-0">
+            <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-ping"></span>
+            <span>جاهز</span>
+          </div>
+          <div className="px-2 border-l border-zinc-400 truncate shrink-0">
+            <span>المستخدم الحالي: المدير العام (المدير)</span>
+          </div>
+          <div className="px-2 border-l border-zinc-400 truncate">
+            <span className="text-blue-800 font-mono font-bold">{gridActiveCellAddress}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="px-2 border-r border-zinc-400 shrink-0 font-mono text-[10px]">
+            <span>سيرفر الميزان: متصل</span>
+          </div>
+          <div className="px-2 border-r border-zinc-400 shrink-0 text-zinc-500 font-mono text-[10px]">
+            <span>سنة مالية: 2026</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ================= MODALS & DIALOGS ================= */}
+
+      {/* PRINT PREVIEW DIALOG (Retro Desktop Style) */}
       {isPreviewOpen && (
-        <div className="fixed inset-0 bg-slate-950/75 flex items-center justify-center p-6 z-[9999] backdrop-blur-xs font-sans" dir="rtl">
-          <div className="bg-white rounded-xl shadow-2xl border border-slate-300 w-[1000px] h-[650px] flex flex-col overflow-hidden animate-window-open">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[9999] font-sans" dir="rtl">
+          <div className="bg-[#f0f0f0] border-2 border-zinc-500 w-[950px] h-[600px] flex flex-col overflow-hidden shadow-2xl">
             
-            {/* Header */}
-            <div className="p-3 border-b border-slate-200 bg-slate-100 flex items-center justify-between shrink-0">
-              <span className="font-black text-xs text-slate-800 flex items-center gap-2">
-                <Printer className="w-4 h-4 text-blue-600" /> معاينة وتصميم قوالب الطباعة المحترفة - الميزان المحاسبي
-              </span>
-              <button 
-                onClick={() => setIsPreviewOpen(false)} 
-                className="p-1 hover:bg-slate-300 rounded-full cursor-pointer text-slate-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
+            {/* Dialog Header */}
+            <div className="bg-gradient-to-r from-[#000080] to-[#1084d0] text-white px-2 py-1 flex items-center justify-between select-none shrink-0 font-bold text-xs">
+              <span>🖨️ معاينة وتعديل قالب السند المطبوع - الميزان .NET</span>
+              <button onClick={() => setIsPreviewOpen(false)} className="w-4 h-4 bg-[#f0f0f0] text-black text-[9px] flex items-center justify-center border hover:bg-red-600 hover:text-white font-black cursor-pointer">✕</button>
             </div>
 
-            {/* Split layout inside Print Preview: Left Settings Editor Sidebar vs Right Visual sheet preview */}
+            {/* Dialog Layout: Settings vs Sheet Preview */}
             <div className="flex-1 flex min-h-0">
               
-              {/* Left Settings Sidebar */}
-              <div className="w-80 bg-slate-50 border-l border-slate-200 p-3.5 space-y-4 overflow-y-auto shrink-0 font-bold text-xs text-slate-700">
-                
-                <div className="space-y-1.5">
-                  <label className="block text-[10px] uppercase font-black text-slate-400 tracking-wider">اختر قالب/نموذج الطباعة</label>
+              {/* Left sidebar designer settings */}
+              <div className="w-72 bg-[#e0e0e0] border-l border-zinc-400 p-2 space-y-3 overflow-y-auto shrink-0 font-bold text-[11px] text-zinc-800">
+                <div className="border border-zinc-400 p-2 bg-white">
+                  <label className="block text-[10px] text-zinc-600 mb-1">اختر قالب/نموذج الطباعة:</label>
                   <select
                     value={selectedPrintModel}
                     onChange={e => {
                       const model = e.target.value;
                       setSelectedPrintModel(model);
-                      // Auto-apply specific settings based on models selected
                       if (model === 'A4_Full') {
-                        setPrintCustomizations(prev => ({ ...prev, fontSize: '12px', showLogo: true, showPrices: true, showQuantities: true }));
+                        setPrintCustomizations(prev => ({ ...prev, fontSize: '11px', showLogo: true, showPrices: true, showQuantities: true }));
                       } else if (model.includes('Thermal')) {
-                        setPrintCustomizations(prev => ({ ...prev, fontSize: '10px', showLogo: true, marginSize: '5px' }));
-                      } else if (model === 'No_Prices') {
-                        setPrintCustomizations(prev => ({ ...prev, showPrices: false, showLogo: false }));
-                      } else if (model === 'No_Quantities') {
-                        setPrintCustomizations(prev => ({ ...prev, showQuantities: false }));
+                        setPrintCustomizations(prev => ({ ...prev, fontSize: '9px', showLogo: true, marginSize: '5px' }));
                       }
-                      showToast(`تم تطبيق القالب: ${model}`, 'success');
+                      showToast(`تم تبديل نموذج الطباعة`, 'info');
                     }}
-                    className="w-full bg-white border border-slate-300 rounded p-1.5 text-xs text-slate-800 font-bold"
+                    className="w-full bg-white border border-zinc-400 p-1 text-[11px] font-bold text-zinc-950 rounded-none focus:outline-none"
                   >
-                    <option value="A4_Full">فاتورة A4 كاملة (مع ترويسة وإطارات)</option>
-                    <option value="A5_Half">فاتورة نصف A4 (A5 - مدمج)</option>
-                    <option value="Thermal_80">فاتورة حرارية نقاط بيع 80 مم</option>
-                    <option value="Thermal_58">فاتورة حرارية نقاط بيع 58 مم</option>
-                    <option value="Simplified">نموذج مبسط (البنود والضرائب فقط)</option>
-                    <option value="Detailed">نموذج تفصيلي (الحسابات والمراكز)</option>
-                    <option value="With_Logo">نموذج يحتوي على شعار الشركة</option>
-                    <option value="No_Prices">نموذج مستودعي للتحضير (بدون أسعار)</option>
-                    <option value="No_Quantities">نموذج سري للتسعير (بدون كميات)</option>
-                    <option value="Arabic_Only">نموذج باللغة العربية الفصحى</option>
-                    <option value="English_Only">نموذج باللغة الإنجليزية كاملة</option>
-                    <option value="Bilingual">نموذج ثنائي اللغة (Arabic + English)</option>
+                    <option value="A4_Full">فاتورة A4 كاملة (مع الترويسة والإطارات)</option>
+                    <option value="A5_Half">فاتورة نصف A4 (نموذج مدمج A5)</option>
+                    <option value="Thermal_80">فاتورة نقاط بيع حرارية 80 مم</option>
                   </select>
                 </div>
 
-                <div className="border-t border-slate-200 pt-3 space-y-3">
-                  <span className="text-[10px] uppercase font-black text-slate-400 tracking-wider">تخصيص القالب والخطوط والألوان</span>
+                <div className="border border-zinc-400 p-2 bg-white space-y-2">
+                  <div className="text-[10px] text-blue-900 border-b pb-1 font-black">خيارات مصمم الشاشات</div>
                   
-                  <div className="space-y-1">
-                    <label className="block text-[10px] text-slate-500">عنوان الفاتورة الرئيسي</label>
+                  <div>
+                    <label className="block text-[9px] text-zinc-500">عنوان السند الرئيسي:</label>
                     <input
                       type="text"
                       value={printCustomizations.title}
                       onChange={e => setPrintCustomizations({ ...printCustomizations, title: e.target.value })}
-                      className="w-full bg-white border rounded p-1 text-xs"
+                      className="w-full bg-white border border-zinc-400 p-1 text-[11px] font-bold text-zinc-900 rounded-none focus:outline-none"
                     />
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="block text-[10px] text-slate-500">العنوان الفرعي والشركة</label>
+                  <div>
+                    <label className="block text-[9px] text-zinc-500">اسم الشركة / العنوان الفرعي:</label>
                     <input
                       type="text"
                       value={printCustomizations.subTitle}
                       onChange={e => setPrintCustomizations({ ...printCustomizations, subTitle: e.target.value })}
-                      className="w-full bg-white border rounded p-1 text-xs"
+                      className="w-full bg-white border border-zinc-400 p-1 text-[11px] font-bold text-zinc-900 rounded-none focus:outline-none"
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <label className="block text-[10px] text-slate-500">حجم الخط</label>
-                      <select
-                        value={printCustomizations.fontSize}
-                        onChange={e => setPrintCustomizations({ ...printCustomizations, fontSize: e.target.value })}
-                        className="w-full bg-white border rounded p-1 text-[11px]"
-                      >
-                        <option value="9px">صغير جداً (9px)</option>
-                        <option value="11px">متوسط (11px)</option>
-                        <option value="13px">كبير (13px)</option>
-                        <option value="15px">ضخم (15px)</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="block text-[10px] text-slate-500">لون الطابع</label>
-                      <select
-                        value={printCustomizations.colorTheme}
-                        onChange={e => setPrintCustomizations({ ...printCustomizations, colorTheme: e.target.value })}
-                        className="w-full bg-white border rounded p-1 text-[11px]"
-                      >
-                        <option value="#1e40af">أزرق ملكي</option>
-                        <option value="#0f766e">أخضر بترولي</option>
-                        <option value="#b91c1c">أحمر داكن</option>
-                        <option value="#1e293b">رمادي غامق</option>
-                        <option value="#000000">أسود رمادي</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Toggle fields checkboxes */}
-                  <div className="space-y-1.5 pt-2 border-t border-slate-200">
-                    <label className="flex items-center gap-2 cursor-pointer text-[11px]">
+                  <div className="pt-2 space-y-1.5 border-t border-zinc-200">
+                    <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={printCustomizations.showLogo}
                         onChange={e => setPrintCustomizations({ ...printCustomizations, showLogo: e.target.checked })}
-                        className="rounded text-blue-600 focus:ring-0"
+                        className="rounded-none focus:ring-0"
                       />
                       إظهار شعار الترويسة {printCustomizations.logoIcon}
                     </label>
 
-                    <label className="flex items-center gap-2 cursor-pointer text-[11px]">
+                    <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={printCustomizations.showPrices}
                         onChange={e => setPrintCustomizations({ ...printCustomizations, showPrices: e.target.checked })}
-                        className="rounded text-blue-600 focus:ring-0"
+                        className="rounded-none focus:ring-0"
                       />
-                      إظهار الأسعار والخصومات الإجمالية
+                      إظهار الأسعار والإجماليات
                     </label>
 
-                    <label className="flex items-center gap-2 cursor-pointer text-[11px]">
+                    <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={printCustomizations.showQuantities}
                         onChange={e => setPrintCustomizations({ ...printCustomizations, showQuantities: e.target.checked })}
-                        className="rounded text-blue-600 focus:ring-0"
+                        className="rounded-none focus:ring-0"
                       />
-                      إظهار عمود الكميات
+                      إظهار عمود الكمية
                     </label>
 
-                    <label className="flex items-center gap-2 cursor-pointer text-[11px]">
+                    <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={printCustomizations.showQRCode}
                         onChange={e => setPrintCustomizations({ ...printCustomizations, showQRCode: e.target.checked })}
-                        className="rounded text-blue-600 focus:ring-0"
+                        className="rounded-none focus:ring-0"
                       />
-                      تضمين رمز الاستجابة الضريبي ZATCA
+                      رمز الاستجابة ZATCA المتوافق
                     </label>
                   </div>
-
                 </div>
 
-                <div className="bg-slate-100 p-2 rounded border border-slate-200 text-[10px] text-slate-500 font-medium leading-relaxed">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 inline ml-1 align-text-bottom" />
-                  أية تغييرات تجريها هنا يتم حفظها في القالب النشط فوراً لتسهيل تسلسل الاستخدام.
+                <div className="bg-yellow-50 p-2 border border-yellow-300 text-[10px] text-yellow-800 leading-relaxed font-bold">
+                  🖶 التغييرات التي تجريها هنا تظهر فوراً في المعاينة ويتم تذكرها تلقائياً على خيارات الطباعة للجلسة.
                 </div>
-
               </div>
 
-              {/* Right interactive visual sheet container */}
-              <div className="flex-1 bg-slate-200 overflow-y-auto p-4 flex justify-center items-start">
+              {/* Right sheet visual view */}
+              <div className="flex-1 bg-zinc-400 overflow-y-auto p-4 flex justify-center items-start">
                 
-                {/* Print Sheet */}
                 <div 
                   style={{ 
-                    width: selectedPrintModel.includes('Thermal') ? '360px' : '520px',
+                    width: selectedPrintModel.includes('Thermal') ? '340px' : '500px',
                     borderColor: printCustomizations.colorTheme,
                     padding: printCustomizations.marginSize
                   }}
-                  className="bg-white border-t-[8px] shadow-2xl p-6 relative text-right text-xs font-bold leading-relaxed space-y-4 text-slate-800"
+                  className="bg-white border-t-[6px] shadow-xl p-5 relative text-right text-xs font-bold leading-relaxed space-y-3 text-zinc-900 border border-zinc-300"
                 >
-                  
-                  {/* Header custom design representation */}
                   {printCustomizations.showLogo && (
-                    <div className="flex justify-between items-center border-b pb-3 border-slate-200">
+                    <div className="flex justify-between items-center border-b pb-2 border-zinc-200">
                       <div>
                         <div className="text-sm font-black" style={{ color: printCustomizations.colorTheme }}>
                           {printCustomizations.title}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-bold mt-0.5">
+                        <div className="text-[10px] text-zinc-500 font-bold">
                           {printCustomizations.subTitle}
                         </div>
                       </div>
@@ -1549,40 +1648,38 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
                     </div>
                   )}
 
-                  {/* Customer and warehouse properties */}
-                  <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-600 bg-slate-50 p-2 rounded border border-slate-100">
+                  <div className="grid grid-cols-2 gap-1 text-[10px] text-zinc-600 bg-zinc-50 p-1.5 border border-zinc-200">
                     <div>
-                      <span>رقم المعاملة: <span className="font-mono text-slate-900">{activeTab.invoiceNo}</span></span><br/>
-                      <span>تاريخها: <span className="font-mono text-slate-900">{activeTab.date}</span></span>
+                      <span>رقم المعاملة: <span className="font-mono text-zinc-900">{activeTab.invoiceNo}</span></span><br/>
+                      <span>تاريخ المعاملة: <span className="font-mono text-zinc-900">{activeTab.date}</span></span>
                     </div>
                     <div>
-                      <span>المستفيد: <span className="text-slate-900">{customers.find(c => c.id === activeTab.customerId)?.name || 'غير محدد'}</span></span><br/>
-                      <span>المستودع: <span className="text-slate-900">{warehouses.find(w => w.id === activeTab.warehouseId)?.name || 'الرئيسي'}</span></span>
+                      <span>الحساب المقابل: <span className="text-zinc-900">{customers.find(c => c.id === activeTab.customerId)?.name || 'نقدي'}</span></span><br/>
+                      <span>المستودع المالي: <span className="text-zinc-900">{warehouses.find(w => w.id === activeTab.warehouseId)?.name || 'الرئيسي'}</span></span>
                     </div>
                   </div>
 
-                  {/* Printed Items Table */}
-                  <div className="border border-slate-200 rounded overflow-hidden">
-                    <table className="w-full text-[10px] font-bold">
+                  <div className="border border-zinc-300">
+                    <table className="w-full text-[10px] font-bold border-collapse">
                       <thead>
                         <tr style={{ backgroundColor: printCustomizations.colorTheme }} className="text-white text-right">
-                          <th className="p-1 text-center w-6">#</th>
-                          <th className="p-1">اسم الصنف السلعي</th>
-                          {printCustomizations.showQuantities && <th className="p-1 text-center w-12">الكمية</th>}
-                          {printCustomizations.showPrices && <th className="p-1 text-center w-16">سعر الوحدة</th>}
-                          {printCustomizations.showPrices && <th className="p-1 text-left w-16">الإجمالي</th>}
+                          <th className="p-1 text-center w-6 border-b border-zinc-300">#</th>
+                          <th className="p-1 border-b border-zinc-300">اسم الصنف السلعي</th>
+                          {printCustomizations.showQuantities && <th className="p-1 text-center w-12 border-b border-zinc-300">الكمية</th>}
+                          {printCustomizations.showPrices && <th className="p-1 text-center w-16 border-b border-zinc-300">السعر</th>}
+                          {printCustomizations.showPrices && <th className="p-1 text-left w-16 border-b border-zinc-300">الإجمالي</th>}
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 bg-white text-slate-700">
+                      <tbody className="divide-y divide-zinc-200 bg-white text-zinc-700">
                         {activeTab.gridRows.map((row, idx) => {
                           const it = items.find(i => i.id === row.itemId);
                           return (
                             <tr key={row.id}>
-                              <td className="p-1 text-center font-mono">{idx + 1}</td>
-                              <td className="p-1 truncate">{it?.name || 'صنف مالي'}</td>
-                              {printCustomizations.showQuantities && <td className="p-1 text-center font-mono">{row.quantity}</td>}
-                              {printCustomizations.showPrices && <td className="p-1 text-center font-mono">{row.unitPrice}</td>}
-                              {printCustomizations.showPrices && <td className="p-1 text-left font-mono">{row.total} ر.س</td>}
+                              <td className="p-1 text-center font-mono border-l border-zinc-200">{idx + 1}</td>
+                              <td className="p-1 truncate border-l border-zinc-200">{it?.name || 'صنف سلعي'}</td>
+                              {printCustomizations.showQuantities && <td className="p-1 text-center font-mono border-l border-zinc-200">{row.quantity}</td>}
+                              {printCustomizations.showPrices && <td className="p-1 text-center font-mono border-l border-zinc-200">{row.unitPrice.toFixed(2)}</td>}
+                              {printCustomizations.showPrices && <td className="p-1 text-left font-mono">{row.total.toFixed(2)}</td>}
                             </tr>
                           );
                         })}
@@ -1590,11 +1687,9 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
                     </table>
                   </div>
 
-                  {/* Calculations and sums */}
-                  <div className="flex justify-between items-end pt-2 border-t border-slate-200">
-                    
+                  <div className="flex justify-between items-end pt-2 border-t border-zinc-200">
                     {printCustomizations.showQRCode && (
-                      <div className="w-20 h-20 border p-0.5 bg-white shrink-0">
+                      <div className="w-16 h-16 border-2 border-zinc-400 p-0.5 bg-white shrink-0">
                         <svg className="w-full h-full" viewBox="0 0 100 100" fill="none">
                           <rect width="100" height="100" fill="white" />
                           <rect x="5" y="5" width="20" height="20" fill="black" />
@@ -1606,22 +1701,21 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
                     )}
 
                     {printCustomizations.showPrices && (
-                      <div className="w-48 bg-slate-50 border border-slate-200 rounded p-1.5 text-[10px] text-slate-600 space-y-1">
+                      <div className="w-48 bg-zinc-50 border border-zinc-300 p-1.5 text-[10px] text-zinc-700 space-y-1">
                         <div className="flex justify-between">
-                          <span>الإجمالي المبدئي:</span>
-                          <span className="font-mono text-slate-900">{subtotal.toLocaleString()} ر.س</span>
+                          <span>الإجمالي للسلع:</span>
+                          <span className="font-mono text-zinc-950">{subtotal.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between text-red-600">
+                        <div className="flex justify-between text-red-700 font-bold">
                           <span>الضريبة {activeTab.taxPercent}%:</span>
-                          <span className="font-mono">{taxAmount.toLocaleString()} ر.س</span>
+                          <span className="font-mono">+{taxAmount.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between text-blue-700 font-black border-t pt-1 text-[11px]">
-                          <span>الصافي الكلي:</span>
-                          <span className="font-mono">{netAmount.toLocaleString()} ر.س</span>
+                        <div className="flex justify-between text-blue-900 font-black border-t pt-1 text-[11px]">
+                          <span>الصافي المطلوب:</span>
+                          <span className="font-mono">{netAmount.toFixed(2)} ر.س</span>
                         </div>
                       </div>
                     )}
-
                   </div>
 
                 </div>
@@ -1630,22 +1724,138 @@ export const InvoiceWindow: React.FC<InvoiceWindowProps> = ({
 
             </div>
 
-            {/* Footer Buttons */}
-            <div className="bg-slate-100 p-3 border-t flex justify-end gap-2 shrink-0">
+            {/* Dialog Footer */}
+            <div className="bg-[#e0e0e0] p-1.5 border-t border-zinc-400 flex justify-end gap-1 shrink-0 font-sans">
               <button 
                 onClick={() => setIsPreviewOpen(false)} 
-                className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 rounded-lg text-slate-700 font-bold text-xs cursor-pointer"
+                className="px-4 py-1 bg-[#f0f0f0] border border-zinc-400 hover:bg-zinc-200 font-bold text-xs cursor-pointer active:bg-zinc-300"
               >
-                إغلاق المعاينة
+                إلغاء المعاينة
               </button>
               <button 
                 onClick={() => { setIsPreviewOpen(false); handleSilentPrint(); }} 
-                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs cursor-pointer flex items-center gap-1 shadow"
+                className="px-4 py-1 bg-blue-800 text-white border border-blue-950 hover:bg-blue-900 font-bold text-xs cursor-pointer flex items-center gap-1 shadow-sm"
               >
-                <Printer className="w-4 h-4" /> توجيه لملقم الطباعة المباشر
+                <Printer className="w-4 h-4" /> إرسال مباشر للطابعة [F6]
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* ABOUT DIALOG (Classic Windows About Box) */}
+      {isAboutOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-[9999] font-sans" dir="rtl">
+          <div className="bg-[#f0f0f0] border-2 border-zinc-500 w-96 shadow-2xl flex flex-col">
+            <div className="bg-gradient-to-r from-[#000080] to-[#1084d0] text-white px-2 py-0.5 flex items-center justify-between font-bold text-xs">
+              <span>حول برنامج الميزان .NET</span>
+              <button onClick={() => setIsAboutOpen(false)} className="w-4 h-4 bg-[#f0f0f0] text-black text-[9px] flex items-center justify-center border hover:bg-red-600 hover:text-white font-black cursor-pointer">✕</button>
+            </div>
+            <div className="p-4 space-y-3 text-center">
+              <div className="text-3xl">⚖️</div>
+              <h2 className="text-sm font-black text-zinc-950">الميزان المحاسبي والمستودعات d.net</h2>
+              <p className="text-[11px] text-zinc-600 font-bold leading-relaxed">
+                الإصدار الاحترافي السحابي الموحد 2026.07<br/>
+                تطوير شركة الميزان لتطوير البرمجيات والنظم المحاسبية المتكاملة.<br/>
+                مرخص لـ: المدير العام (ترخيص مؤسسي دولي دائم).
+              </p>
+              <div className="border-t border-zinc-300 my-2 pt-2 text-[9px] text-zinc-400 font-bold">
+                جميع الحقوق محفوظة © 2010 - 2026 الميزان دوت نت
+              </div>
+              <div className="flex justify-center">
+                <button 
+                  onClick={() => setIsAboutOpen(false)} 
+                  className="px-6 py-1 bg-[#f0f0f0] border border-zinc-400 hover:bg-zinc-200 text-xs font-bold shadow-xs active:bg-zinc-300"
+                >
+                  موافق
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AUDIT LOGS DIALOG */}
+      {isAuditLogsOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-[9999] font-sans" dir="rtl">
+          <div className="bg-[#f0f0f0] border-2 border-zinc-500 w-[500px] shadow-2xl flex flex-col">
+            <div className="bg-gradient-to-r from-[#000080] to-[#1084d0] text-white px-2 py-0.5 flex items-center justify-between font-bold text-xs">
+              <span>سجل التدقيق والعمليات للسند المحاسبي</span>
+              <button onClick={() => setIsAuditLogsOpen(false)} className="w-4 h-4 bg-[#f0f0f0] text-black text-[9px] flex items-center justify-center border hover:bg-red-600 hover:text-white font-black cursor-pointer">✕</button>
+            </div>
+            <div className="p-3.5 space-y-2">
+              <span className="text-[10px] font-black text-blue-900 block">تتبع عمليات الإدخال والتعديل في الخوادم:</span>
+              <div className="bg-white border border-zinc-400 p-2 h-44 overflow-y-auto font-mono text-[10px] font-bold text-zinc-700 space-y-1 shadow-inner">
+                {activeTab.auditLogs.map((log, lIdx) => (
+                  <div key={lIdx} className="border-b border-zinc-100 pb-0.5 last:border-0">
+                    🏁 {log}
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-end pt-2">
+                <button 
+                  onClick={() => setIsAuditLogsOpen(false)} 
+                  className="px-5 py-1 bg-[#f0f0f0] border border-zinc-400 hover:bg-zinc-200 text-xs font-bold active:bg-zinc-300"
+                >
+                  إغلاق السجل
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SEARCH/SELECTION INDEX POPUP */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-[9999] font-sans" dir="rtl">
+          <div className="bg-[#f0f0f0] border-2 border-zinc-500 w-[450px] shadow-2xl flex flex-col">
+            <div className="bg-gradient-to-r from-[#000080] to-[#1084d0] text-white px-2 py-0.5 flex items-center justify-between font-bold text-xs">
+              <span>بحث سريع في الفواتير والسندات المخزنة</span>
+              <button onClick={() => setIsSearchOpen(false)} className="w-4 h-4 bg-[#f0f0f0] text-black text-[9px] flex items-center justify-center border hover:bg-red-600 hover:text-white font-black cursor-pointer">✕</button>
+            </div>
+            <div className="p-3 space-y-3 text-right">
+              <div>
+                <label className="block text-[10px] text-zinc-600 mb-1">ابحث برقم الفاتورة أو العميل:</label>
+                <input
+                  type="text"
+                  placeholder="ابحث هنا..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full bg-white border border-zinc-400 px-2 py-1 text-[11px] font-bold text-zinc-900 shadow-inner rounded-none focus:outline-none"
+                />
+              </div>
+
+              <div className="bg-white border border-zinc-400 p-1.5 h-36 overflow-y-auto space-y-1 text-[10px] font-bold text-zinc-700 shadow-inner">
+                {invoices
+                  .filter(inv => inv.invoiceNo.includes(searchQuery) || (customers.find(c => c.id === inv.customerId)?.name || '').includes(searchQuery))
+                  .map(inv => (
+                    <div 
+                      key={inv.id}
+                      onClick={() => {
+                        const loaded = createNewTabStructure(inv.type, inv.id);
+                        setTabs(prev => [...prev.filter(t => t.id !== inv.id), loaded]);
+                        setActiveTabId(inv.id);
+                        setIsSearchOpen(false);
+                        showToast(`تم تحميل الفاتورة رقم ${inv.invoiceNo}`, 'success');
+                      }}
+                      className="p-1 hover:bg-blue-800 hover:text-white cursor-pointer flex justify-between items-center border-b border-zinc-100 last:border-0"
+                    >
+                      <span>📂 {getArabicTypeLabel(inv.type)} #{inv.invoiceNo}</span>
+                      <span>العميل: {customers.find(c => c.id === inv.customerId)?.name || 'نقدي'}</span>
+                    </div>
+                  ))}
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button 
+                  onClick={() => setIsSearchOpen(false)} 
+                  className="px-5 py-1 bg-[#f0f0f0] border border-zinc-400 hover:bg-zinc-200 text-xs font-bold active:bg-zinc-300"
+                >
+                  إلغاء البحث
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

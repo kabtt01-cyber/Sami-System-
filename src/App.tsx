@@ -31,6 +31,18 @@ import { CustomersWindow } from './components/windows/CustomersWindow';
 import { SuppliersWindow } from './components/windows/SuppliersWindow';
 import { TreasuryBanksWindow } from './components/windows/TreasuryBanksWindow';
 import { HrEmployeesWindow } from './components/windows/HrEmployeesWindow';
+import { AndroidHubWindow } from './components/windows/AndroidHubWindow';
+import { WindowsHubWindow } from './components/windows/WindowsHubWindow';
+import { BarcodeHubWindow } from './components/windows/BarcodeHubWindow';
+import { NotificationHubWindow } from './components/windows/NotificationHubWindow';
+import { WorkflowHubWindow } from './components/windows/WorkflowHubWindow';
+import { ApiHubWindow } from './components/windows/ApiHubWindow';
+import { PerformanceHubWindow } from './components/windows/PerformanceHubWindow';
+import { EnterpriseHubWindow } from './components/windows/EnterpriseHubWindow';
+import { RoadmapWindow } from './components/windows/RoadmapWindow';
+import { GlobalExpansionWindow } from './components/windows/GlobalExpansionWindow';
+import { InnovationHubWindow } from './components/windows/InnovationHubWindow';
+import { WorldClassPlatformWindow } from './components/windows/WorldClassPlatformWindow';
 import { AiAssistant } from './components/AiAssistant';
 import { ActiveTabBar } from './components/ActiveTabBar';
 
@@ -246,6 +258,32 @@ function DesktopContent() {
         return <AdminUpdatesWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
       case 'calculator':
         return <CalculatorWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
+      
+      // Advanced ERP (Phase 8) Windows
+      case 'android_hub':
+        return <AndroidHubWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
+      case 'windows_hub':
+        return <WindowsHubWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
+      case 'barcode_hub':
+        return <BarcodeHubWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
+      case 'notification_hub':
+        return <NotificationHubWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
+      case 'workflow_hub':
+        return <WorkflowHubWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
+      case 'api_hub':
+        return <ApiHubWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
+      case 'performance_hub':
+        return <PerformanceHubWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
+      case 'enterprise_hub':
+        return <EnterpriseHubWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
+      case 'roadmap_window':
+        return <RoadmapWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
+      case 'global_expansion':
+        return <GlobalExpansionWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
+      case 'innovation_hub':
+        return <InnovationHubWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
+      case 'world_class_platform':
+        return <WorldClassPlatformWindow windowId={win.id} onClose={() => closeWindow(win.id)} />;
 
       default:
         return (

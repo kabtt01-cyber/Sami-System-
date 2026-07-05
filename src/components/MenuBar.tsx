@@ -180,6 +180,11 @@ export const MenuBar: React.FC = () => {
         { label: 'فحص وإصلاح قاعدة البيانات', permissionKey: 'settings', action: () => openWindow('tools_manager', 'فحص وإصلاح قاعدة البيانات', { initialTab: 'maintenance' }) },
         { label: 'تدوير الحسابات إلى سنة جديدة', permissionKey: 'settings', action: () => openWindow('tools_manager', 'تدوير الدفاتر والحسابات المالية', { initialTab: 'closing' }) },
         { label: 'مدير التحديثات التلقائية للنظام (Admin)', permissionKey: 'settings', action: () => openWindow('admin_updates', 'مدير التحديثات التلقائية المطور') },
+        { label: 'لوحة تحكم الشركات الكبرى (ERP Enterprise)', permissionKey: 'settings', action: () => openWindow('enterprise_hub', 'نظام الشركات الكبرى ومميزات المؤسسات (ERP Enterprise)') },
+        { label: 'التطوير المستمر وخارطة الطريق المستقبلية', permissionKey: 'settings', action: () => openWindow('roadmap_window', 'التطوير المستمر وخارطة الطريق المستقبلية (Stage 11)') },
+        { label: 'التميز المؤسسي والتوسع العالمي ERP Edge', permissionKey: 'settings', action: () => openWindow('global_expansion', 'التميز المؤسسي والتوسع العالمي (Stage 12)') },
+        { label: 'الابتكار والتفوق التنافسي ERP Innovation', permissionKey: 'settings', action: () => openWindow('innovation_hub', 'الابتكار والتفوق التنافسي (Stage 13)') },
+        { label: 'منصة ERP عالمية وتخصيص كامل (World-Class Platform)', permissionKey: 'settings', action: () => openWindow('world_class_platform', 'منصة ERP عالمية وتخصيص كامل (Stage 15)') },
         { divider: true },
         { label: 'إعدادات وخيارات النظام العامة', permissionKey: 'settings', action: () => openWindow('tools_manager', 'إعدادات وخيارات النظام العامة', { initialTab: 'settings' }) }
       ]
@@ -213,6 +218,10 @@ export const MenuBar: React.FC = () => {
       items: [
         { label: 'كتيب تعليمات الميزان (F1)', action: () => showToast('مستندات الدعم: تم إطلاق دليل المستخدم الرقمي بالكامل.', 'info') },
         { label: 'دروس يوتيوب وقناة الدعم', action: () => window.open('https://youtube.com', '_blank') },
+        { label: 'خارطة الطريق المستقبلية والمقترحات', action: () => openWindow('roadmap_window', 'التطوير المستمر وخارطة الطريق المستقبلية (Stage 11)') },
+        { label: 'التميز المؤسسي والتوسع العالمي ERP Edge', action: () => openWindow('global_expansion', 'التميز المؤسسي والتوسع العالمي (Stage 12)') },
+        { label: 'الابتكار والتفوق التنافسي ERP Innovation', action: () => openWindow('innovation_hub', 'الابتكار والتفوق التنافسي (Stage 13)') },
+        { label: 'منصة ERP عالمية وتخصيص كامل World-Class Platform', action: () => openWindow('world_class_platform', 'منصة ERP عالمية وتخصيص كامل (Stage 15)') },
         { divider: true },
         { label: 'حول نظام الميزان دوت نت', action: () => openWindow('about', 'حول برنامج الميزان دوت نت ERP') }
       ]
